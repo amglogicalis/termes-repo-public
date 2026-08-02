@@ -185,24 +185,30 @@ class TermesConsole {
 
   renderCelluloseTable() {
     const tbody = document.getElementById('cellulose-table-body');
-    const specs = Object.values(this.state.specs || {}).filter(s => s.lastResult);
+    const specs = Object.values(this.state.specs || {});
 
     if (specs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin celulosa digerida aún. Haz clic en ⚡ Digest en cualquier especificación del Termitarium.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin especificaciones en el Termitarium. Crea una especificación para procesar celulosa.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = specs.map(s => {
-      const jsonLen = JSON.stringify(s.lastResult || {}).length;
+      const hasResult = !!s.lastResult;
+      const jsonLen = hasResult ? JSON.stringify(s.lastResult || {}).length : 0;
+      const statusBadge = hasResult 
+        ? `<span class="badge badge-green">🧫 Celulosa Digerida (${(jsonLen / 1024).toFixed(1)} KB)</span>` 
+        : `<span class="badge badge-gold">⏳ Pendiente de Digestión</span>`;
+
       return `
         <tr>
           <td><code>dig_${s.specId}</code></td>
           <td><strong>${s.name}</strong></td>
           <td><a href="${s.targetUrl}" target="_blank" style="color: var(--text-muted); font-size: 0.82rem;">${s.targetUrl}</a></td>
-          <td><span class="badge badge-green">${(jsonLen / 1024).toFixed(1)} KB HTML/JSON</span></td>
-          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${s.lastDigestedAt ? new Date(s.lastDigestedAt).toLocaleTimeString() : 'Recent'}</span></td>
+          <td>${statusBadge}</td>
+          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${s.lastDigestedAt ? new Date(s.lastDigestedAt).toLocaleTimeString() : 'No ejecutado'}</span></td>
           <td>
-            <button class="btn btn-outline btn-sm" onclick="app.previewCellulose('${s.specId}')">🧫 Ver Celulosa Digerida</button>
+            <button class="btn btn-outline btn-sm" onclick="app.previewCellulose('${s.specId}')">🧫 Ver Celulosa</button>
+            <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡ Digest</button>
           </td>
         </tr>
       `;
