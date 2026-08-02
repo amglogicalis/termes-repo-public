@@ -14,6 +14,7 @@ class TermesConsole {
       auditLog: []
     };
     this.owner = '';
+    this.pendingConfirmCallback = null;
   }
 
   async init() {
@@ -129,6 +130,21 @@ class TermesConsole {
     }
   }
 
+  // Custom Glassmorphic Confirmation Modal (Replaces native browser confirm popups)
+  customConfirm(title, message, onConfirm) {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    this.pendingConfirmCallback = onConfirm;
+
+    const okBtn = document.getElementById('confirm-ok-btn');
+    okBtn.onclick = () => {
+      if (this.pendingConfirmCallback) this.pendingConfirmCallback();
+      this.closeModal('custom-confirm-modal');
+    };
+
+    this.openModal('custom-confirm-modal');
+  }
+
   // Render UI
   renderAll() {
     this.renderStats();
@@ -233,7 +249,9 @@ class TermesConsole {
         <td><a href="${a.cdnUrl}" target="_blank" class="badge badge-primary">🌐 Synthetic API</a></td>
         <td>
           <button class="btn-icon" onclick="app.copyApiUrl('${a.cdnUrl}')" title="Copy API URL 📋">📋 Copy API</button>
+          <button class="btn-icon" onclick="app.openEditApiModal('${a.apiId}')" title="Editar API ✏️">✏️</button>
           <button class="btn-icon" onclick="app.previewCellulose('${a.specId}')" title="Preview JSON 🧫">🧫 JSON</button>
+          <button class="btn-icon" onclick="app.deleteApi('${a.apiId}')" title="Borrar API 🗑️">🗑️</button>
         </td>
       </tr>
     `).join('');
@@ -256,7 +274,8 @@ class TermesConsole {
         <td><span style="font-size: 0.82rem; color: var(--text-muted);">${w.targetUrl}</span></td>
         <td><span class="badge badge-green">Active</span></td>
         <td>
-          <button class="btn-icon" onclick="app.deleteWebhook('${w.ruleId}')" title="Delete">🗑️</button>
+          <button class="btn-icon" onclick="app.openEditWebhookModal('${w.ruleId}')" title="Editar Webhook ✏️">✏️</button>
+          <button class="btn-icon" onclick="app.deleteWebhook('${w.ruleId}')" title="Eliminar Webhook 🗑️">🗑️</button>
         </td>
       </tr>
     `).join('');
@@ -279,13 +298,14 @@ class TermesConsole {
         <td><span style="font-size: 0.82rem; color: var(--text-muted);">${b.config.webhookUrl || b.config.endpoint || 'Configured'}</span></td>
         <td><span class="badge badge-green">Active</span></td>
         <td>
-          <button class="btn-icon" onclick="app.deleteBridge('${b.targetId}')" title="Delete">🗑️</button>
+          <button class="btn-icon" onclick="app.openEditBridgeModal('${b.targetId}')" title="Editar Puente ✏️">✏️</button>
+          <button class="btn-icon" onclick="app.deleteBridge('${b.targetId}')" title="Eliminar Puente 🗑️">🗑️</button>
         </td>
       </tr>
     `).join('');
   }
 
-  // Form Handlers
+  // Form Handlers — Specs
   async handleCreateSpec(e) {
     e.preventDefault();
     const name = document.getElementById('spec-name').value.trim();
@@ -368,13 +388,18 @@ class TermesConsole {
     this.renderAll();
   }
 
-  async deleteSpec(specId) {
-    if (!confirm('¿Seguro que deseas eliminar esta especificación del Termitarium?')) return;
-    delete this.state.specs[specId];
-    delete this.state.termitomycesApis[`api_${specId}`];
-    await this.saveVaultState(`Delete spec ${specId}`);
-    this.showToast('Especificación eliminada.', 'success');
-    this.renderAll();
+  deleteSpec(specId) {
+    this.customConfirm(
+      'Eliminar Especificación',
+      '¿Seguro que deseas eliminar esta especificación del Termitarium?',
+      async () => {
+        delete this.state.specs[specId];
+        delete this.state.termitomycesApis[`api_${specId}`];
+        await this.saveVaultState(`Delete spec ${specId}`);
+        this.showToast('Especificación eliminada.', 'success');
+        this.renderAll();
+      }
+    );
   }
 
   async digestSpec(specId) {
@@ -428,6 +453,171 @@ class TermesConsole {
     this.renderAll();
   }
 
+  // Form Handlers — Termitomyces APIs
+  openEditApiModal(apiId) {
+    const a = this.state.termitomycesApis[apiId];
+    if (!a) return;
+    document.getElementById('edit-api-id').value = apiId;
+    document.getElementById('edit-api-name').value = a.name;
+    document.getElementById('edit-api-status').value = a.status || 'active';
+    this.openModal('edit-api-modal');
+  }
+
+  async handleUpdateApi(e) {
+    e.preventDefault();
+    const apiId = document.getElementById('edit-api-id').value;
+    const a = this.state.termitomycesApis[apiId];
+    if (!a) return;
+
+    a.name = document.getElementById('edit-api-name').value.trim();
+    a.status = document.getElementById('edit-api-status').value;
+    a.lastUpdated = new Date().toISOString();
+
+    await this.saveVaultState(`Update Termitomyces API ${a.name}`);
+    this.closeModal('edit-api-modal');
+    this.showToast('API Sintética actualizada correctamente!', 'success');
+    this.renderAll();
+  }
+
+  deleteApi(apiId) {
+    this.customConfirm(
+      'Eliminar API Sintética',
+      '¿Seguro que deseas eliminar esta API Sintética Termitomyces?',
+      async () => {
+        delete this.state.termitomycesApis[apiId];
+        await this.saveVaultState(`Delete Termitomyces API ${apiId}`);
+        this.showToast('API Sintética eliminada.', 'success');
+        this.renderAll();
+      }
+    );
+  }
+
+  // Form Handlers — Webhooks
+  async handleCreateWebhook(e) {
+    e.preventDefault();
+    const name = document.getElementById('webhook-name').value.trim();
+    const targetUrl = document.getElementById('webhook-url').value.trim();
+    const triggerCondition = document.getElementById('webhook-condition').value;
+
+    const ruleId = `wh_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    this.state.webhooks[ruleId] = {
+      ruleId,
+      name,
+      targetUrl,
+      triggerCondition,
+      active: true,
+      createdAt: new Date().toISOString()
+    };
+
+    await this.saveVaultState(`Create webhook ${name}`);
+    this.closeModal('create-webhook-modal');
+    document.getElementById('create-webhook-form').reset();
+    this.showToast('Webhook Invertido creado!', 'success');
+    this.renderAll();
+  }
+
+  openEditWebhookModal(ruleId) {
+    const w = this.state.webhooks[ruleId];
+    if (!w) return;
+    document.getElementById('edit-webhook-id').value = ruleId;
+    document.getElementById('edit-webhook-name').value = w.name;
+    document.getElementById('edit-webhook-url').value = w.targetUrl;
+    document.getElementById('edit-webhook-condition').value = w.triggerCondition || 'on_change';
+    this.openModal('edit-webhook-modal');
+  }
+
+  async handleUpdateWebhook(e) {
+    e.preventDefault();
+    const ruleId = document.getElementById('edit-webhook-id').value;
+    const w = this.state.webhooks[ruleId];
+    if (!w) return;
+
+    w.name = document.getElementById('edit-webhook-name').value.trim();
+    w.targetUrl = document.getElementById('edit-webhook-url').value.trim();
+    w.triggerCondition = document.getElementById('edit-webhook-condition').value;
+
+    await this.saveVaultState(`Update Webhook ${w.name}`);
+    this.closeModal('edit-webhook-modal');
+    this.showToast('Webhook Invertido actualizado!', 'success');
+    this.renderAll();
+  }
+
+  deleteWebhook(ruleId) {
+    this.customConfirm(
+      'Eliminar Webhook Invertido',
+      '¿Seguro que deseas eliminar este Webhook Invertido?',
+      async () => {
+        delete this.state.webhooks[ruleId];
+        await this.saveVaultState(`Delete webhook ${ruleId}`);
+        this.showToast('Webhook eliminado.', 'success');
+        this.renderAll();
+      }
+    );
+  }
+
+  // Form Handlers — Bridges
+  async handleCreateBridge(e) {
+    e.preventDefault();
+    const name = document.getElementById('bridge-name').value.trim();
+    const type = document.getElementById('bridge-type').value;
+    const endpoint = document.getElementById('bridge-endpoint').value.trim();
+
+    const targetId = `bridge_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    this.state.trophallaxisBridges[targetId] = {
+      targetId,
+      name,
+      type,
+      config: { webhookUrl: endpoint },
+      active: true
+    };
+
+    await this.saveVaultState(`Create Trophallaxis Bridge ${name}`);
+    this.closeModal('create-bridge-modal');
+    document.getElementById('create-bridge-form').reset();
+    this.showToast('Puente Multi-Cloud creado!', 'success');
+    this.renderAll();
+  }
+
+  openEditBridgeModal(targetId) {
+    const b = this.state.trophallaxisBridges[targetId];
+    if (!b) return;
+    document.getElementById('edit-bridge-id').value = targetId;
+    document.getElementById('edit-bridge-name').value = b.name;
+    document.getElementById('edit-bridge-type').value = b.type || 'aws_s3';
+    document.getElementById('edit-bridge-endpoint').value = b.config?.webhookUrl || b.config?.endpoint || '';
+    this.openModal('edit-bridge-modal');
+  }
+
+  async handleUpdateBridge(e) {
+    e.preventDefault();
+    const targetId = document.getElementById('edit-bridge-id').value;
+    const b = this.state.trophallaxisBridges[targetId];
+    if (!b) return;
+
+    b.name = document.getElementById('edit-bridge-name').value.trim();
+    b.type = document.getElementById('edit-bridge-type').value;
+    b.config = { webhookUrl: document.getElementById('edit-bridge-endpoint').value.trim() };
+
+    await this.saveVaultState(`Update Bridge ${b.name}`);
+    this.closeModal('edit-bridge-modal');
+    this.showToast('Puente Multi-Cloud actualizado!', 'success');
+    this.renderAll();
+  }
+
+  deleteBridge(targetId) {
+    this.customConfirm(
+      'Eliminar Puente Multi-Cloud',
+      '¿Seguro que deseas eliminar este Puente Multi-Cloud?',
+      async () => {
+        delete this.state.trophallaxisBridges[targetId];
+        await this.saveVaultState(`Delete bridge ${targetId}`);
+        this.showToast('Puente eliminado.', 'success');
+        this.renderAll();
+      }
+    );
+  }
+
+  // Cellulose & Utility Helpers
   showLatestCellulose() {
     const specs = Object.values(this.state.specs || {}).filter(s => s.lastResult);
     if (specs.length > 0) {
@@ -454,69 +644,6 @@ class TermesConsole {
   copyApiUrl(url) {
     navigator.clipboard.writeText(url);
     this.showToast('🌐 URL de la API Sintética copiada al portapapeles!', 'success');
-  }
-
-  // Webhooks
-  async handleCreateWebhook(e) {
-    e.preventDefault();
-    const name = document.getElementById('webhook-name').value.trim();
-    const targetUrl = document.getElementById('webhook-url').value.trim();
-    const triggerCondition = document.getElementById('webhook-condition').value;
-
-    const ruleId = `wh_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-    this.state.webhooks[ruleId] = {
-      ruleId,
-      name,
-      targetUrl,
-      triggerCondition,
-      active: true,
-      createdAt: new Date().toISOString()
-    };
-
-    await this.saveVaultState(`Create webhook ${name}`);
-    this.closeModal('create-webhook-modal');
-    document.getElementById('create-webhook-form').reset();
-    this.showToast('Webhook Invertido creado!', 'success');
-    this.renderAll();
-  }
-
-  async deleteWebhook(ruleId) {
-    if (!confirm('¿Seguro que deseas eliminar este Webhook Invertido?')) return;
-    delete this.state.webhooks[ruleId];
-    await this.saveVaultState(`Delete webhook ${ruleId}`);
-    this.showToast('Webhook eliminado.', 'success');
-    this.renderAll();
-  }
-
-  // Bridges
-  async handleCreateBridge(e) {
-    e.preventDefault();
-    const name = document.getElementById('bridge-name').value.trim();
-    const type = document.getElementById('bridge-type').value;
-    const endpoint = document.getElementById('bridge-endpoint').value.trim();
-
-    const targetId = `bridge_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-    this.state.trophallaxisBridges[targetId] = {
-      targetId,
-      name,
-      type,
-      config: { webhookUrl: endpoint },
-      active: true
-    };
-
-    await this.saveVaultState(`Create Trophallaxis Bridge ${name}`);
-    this.closeModal('create-bridge-modal');
-    document.getElementById('create-bridge-form').reset();
-    this.showToast('Puente Multi-Cloud creado!', 'success');
-    this.renderAll();
-  }
-
-  async deleteBridge(targetId) {
-    if (!confirm('¿Seguro que deseas eliminar este Puente Multi-Cloud?')) return;
-    delete this.state.trophallaxisBridges[targetId];
-    await this.saveVaultState(`Delete bridge ${targetId}`);
-    this.showToast('Puente eliminado.', 'success');
-    this.renderAll();
   }
 
   // Modal & Toast Helpers
