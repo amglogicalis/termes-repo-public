@@ -163,12 +163,12 @@ class TermesConsole {
         if (!this.state.webhooks) this.state.webhooks = {};
         if (!this.state.trophallaxisBridges) this.state.trophallaxisBridges = {};
 
-        // Migrate API state defaults & ensure raw URLs
+        // Migrate API state defaults & ensure CDN URLs
         Object.values(this.state.termitomycesApis).forEach(a => {
           if (a.isPrivate === undefined) a.isPrivate = false;
           const path = `api/v1/termes/${a.specId}.json`;
           if (!a.isPrivate) {
-            a.cdnUrl = `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
+            a.cdnUrl = `https://${owner}.github.io/${this.cdnRepo}/${path}`;
           }
         });
 
@@ -533,10 +533,10 @@ class TermesConsole {
       const path = `api/v1/termes/${specId}.json`;
       const targetRepo = isPrivate ? this.storageRepo : this.cdnRepo;
 
-      // Provide raw GitHub CDN URL for 200 OK immediate availability
+      // Provide GitHub Pages CDN URL for public APIs
       const cdnUrl = isPrivate
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
+        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
 
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
 
@@ -612,7 +612,7 @@ class TermesConsole {
       const path = `api/v1/termes/${a.specId}.json`;
       a.cdnUrl = newPrivacy
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
+        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
     }
 
     await this.saveVaultState(`Update Termitomyces API ${a.name}`);
