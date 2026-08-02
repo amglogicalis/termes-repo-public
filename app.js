@@ -100,6 +100,12 @@ class TermesConsole {
         if (!this.state.termitomycesApis) this.state.termitomycesApis = {};
         if (!this.state.webhooks) this.state.webhooks = {};
         if (!this.state.trophallaxisBridges) this.state.trophallaxisBridges = {};
+
+        // Migrate API state defaults
+        Object.values(this.state.termitomycesApis).forEach(a => {
+          if (a.isPrivate === undefined) a.isPrivate = false;
+        });
+
         this.showToast('Termitarium Vault loaded successfully!', 'success');
         this.renderAll();
       }
@@ -204,7 +210,7 @@ class TermesConsole {
     const specs = Object.values(this.state.specs || {});
 
     if (specs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin especificaciones en el Termitarium. Crea una especificación para procesar celulosa.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin celulosa digerida. Haz clic en ⚡ Digest en cualquier especificación del Termitarium.</td></tr>`;
       return;
     }
 
@@ -225,6 +231,7 @@ class TermesConsole {
           <td>
             <button class="btn btn-outline btn-sm" onclick="app.previewCellulose('${s.specId}')">🧫 Ver Celulosa</button>
             <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡ Digest</button>
+            <button class="btn-icon" onclick="app.deleteCelluloseItem('${s.specId}')" title="Limpiar Celulosa 🗑️">🗑️</button>
           </td>
         </tr>
       `;
@@ -276,7 +283,7 @@ class TermesConsole {
       <tr>
         <td><code>${w.ruleId}</code></td>
         <td><strong>${w.name}</strong></td>
-        <td><span class="badge badge-blue">${w.triggerCondition}</span></td>
+        <td><span class="badge badge-blue">${w.httpMethod || 'POST'} • ${w.triggerCondition}</span></td>
         <td><span style="font-size: 0.82rem; color: var(--text-muted);">${w.targetUrl}</span></td>
         <td><span class="badge badge-green">Active</span></td>
         <td>
@@ -320,6 +327,35 @@ class TermesConsole {
     const description = document.getElementById('spec-description').value.trim();
     const stealth = document.getElementById('spec-stealth').checked;
 
+    const cultivateApi = document.getElementById('spec-cultivate-api').checked;
+    const apiIsPrivate = document.getElementById('spec-api-privacy').value === 'private';
+
+    const webhookEnable = document.getElementById('spec-webhook-enable').checked;
+    let webhookConfig = undefined;
+
+    if (webhookEnable) {
+      const whUrl = document.getElementById('spec-webhook-url').value.trim();
+      const whMethod = document.getElementById('spec-webhook-method').value;
+      const whHeadersStr = document.getElementById('spec-webhook-headers').value.trim();
+      const whTemplate = document.getElementById('spec-webhook-template').value.trim();
+
+      let headers = undefined;
+      if (whHeadersStr) {
+        try { headers = JSON.parse(whHeadersStr); } catch {}
+      }
+
+      webhookConfig = {
+        ruleId: `wh_${Date.now().toString(36)}`,
+        name: `Webhook for ${name}`,
+        targetUrl: whUrl,
+        httpMethod: whMethod,
+        headers,
+        customPayloadTemplate: whTemplate || undefined,
+        triggerCondition: 'on_change',
+        active: true
+      };
+    }
+
     let selectors = {};
     try {
       selectors = JSON.parse(selectorsStr);
@@ -337,9 +373,10 @@ class TermesConsole {
       description,
       targetUrl,
       selectors,
-      mudTunnel: {
-        stealth
-      },
+      mudTunnel: { stealth },
+      cultivateApi,
+      apiIsPrivate,
+      webhook: webhookConfig,
       active: true,
       createdAt: now,
       updatedAt: now
@@ -361,6 +398,8 @@ class TermesConsole {
     document.getElementById('edit-spec-target-url').value = s.targetUrl;
     document.getElementById('edit-spec-selectors').value = JSON.stringify(s.selectors, null, 2);
     document.getElementById('edit-spec-stealth').checked = s.mudTunnel?.stealth !== false;
+    document.getElementById('edit-spec-cultivate-api').checked = s.cultivateApi !== false;
+    document.getElementById('edit-spec-api-privacy').value = s.apiIsPrivate ? 'private' : 'public';
     this.openModal('edit-spec-modal');
   }
 
@@ -382,6 +421,8 @@ class TermesConsole {
     s.mudTunnel = {
       stealth: document.getElementById('edit-spec-stealth').checked
     };
+    s.cultivateApi = document.getElementById('edit-spec-cultivate-api').checked;
+    s.apiIsPrivate = document.getElementById('edit-spec-api-privacy').value === 'private';
     s.updatedAt = new Date().toISOString();
 
     await this.saveVaultState(`Update spec ${s.name}`);
@@ -421,20 +462,20 @@ class TermesConsole {
     s.lastDigestedAt = new Date().toISOString();
 
     const owner = await this.getOwner();
-    if (owner) {
+    if (owner && s.cultivateApi !== false) {
       const apiId = `api_${specId}`;
-      const existingApi = this.state.termitomycesApis[apiId];
-      const isPrivate = existingApi ? existingApi.isPrivate : false;
+      const isPrivate = s.apiIsPrivate === true;
 
       const path = `api/v1/termes/${specId}.json`;
       const targetRepo = isPrivate ? this.storageRepo : this.cdnRepo;
+      
+      // Provide raw GitHub fallback URL for 200 OK immediate availability
       const cdnUrl = isPrivate
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+        : `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
 
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
 
-      // Fetch SHA on target repo
       const getRes = await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}?ref=${isPrivate ? 'main' : 'gh-pages'}`);
       let sha;
       if (getRes.ok) {
@@ -442,7 +483,6 @@ class TermesConsole {
         sha = d.sha;
       }
 
-      // Commit file to gh-pages branch if public, or main if private
       const bodyPayload = {
         message: `Digest ${s.name}`,
         content: contentEncoded,
@@ -455,7 +495,6 @@ class TermesConsole {
         body: JSON.stringify(bodyPayload)
       });
 
-      // Fallback if gh-pages branch fails
       if (!putRes.ok && !isPrivate) {
         delete bodyPayload.branch;
         await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}`, {
@@ -509,7 +548,7 @@ class TermesConsole {
       const path = `api/v1/termes/${a.specId}.json`;
       a.cdnUrl = newPrivacy
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+        : `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
     }
 
     await this.saveVaultState(`Update Termitomyces API ${a.name}`);
@@ -536,13 +575,24 @@ class TermesConsole {
     e.preventDefault();
     const name = document.getElementById('webhook-name').value.trim();
     const targetUrl = document.getElementById('webhook-url').value.trim();
+    const httpMethod = document.getElementById('webhook-method').value;
     const triggerCondition = document.getElementById('webhook-condition').value;
+    const headersStr = document.getElementById('webhook-headers').value.trim();
+    const customPayloadTemplate = document.getElementById('webhook-template').value.trim();
+
+    let headers = undefined;
+    if (headersStr) {
+      try { headers = JSON.parse(headersStr); } catch {}
+    }
 
     const ruleId = `wh_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     this.state.webhooks[ruleId] = {
       ruleId,
       name,
       targetUrl,
+      httpMethod,
+      headers,
+      customPayloadTemplate: customPayloadTemplate || undefined,
       triggerCondition,
       active: true,
       createdAt: new Date().toISOString()
@@ -561,7 +611,10 @@ class TermesConsole {
     document.getElementById('edit-webhook-id').value = ruleId;
     document.getElementById('edit-webhook-name').value = w.name;
     document.getElementById('edit-webhook-url').value = w.targetUrl;
+    document.getElementById('edit-webhook-method').value = w.httpMethod || 'POST';
     document.getElementById('edit-webhook-condition').value = w.triggerCondition || 'on_change';
+    document.getElementById('edit-webhook-headers').value = w.headers ? JSON.stringify(w.headers) : '';
+    document.getElementById('edit-webhook-template').value = w.customPayloadTemplate || '';
     this.openModal('edit-webhook-modal');
   }
 
@@ -573,7 +626,17 @@ class TermesConsole {
 
     w.name = document.getElementById('edit-webhook-name').value.trim();
     w.targetUrl = document.getElementById('edit-webhook-url').value.trim();
+    w.httpMethod = document.getElementById('edit-webhook-method').value;
     w.triggerCondition = document.getElementById('edit-webhook-condition').value;
+
+    const headersStr = document.getElementById('edit-webhook-headers').value.trim();
+    if (headersStr) {
+      try { w.headers = JSON.parse(headersStr); } catch {}
+    } else {
+      delete w.headers;
+    }
+
+    w.customPayloadTemplate = document.getElementById('edit-webhook-template').value.trim() || undefined;
 
     await this.saveVaultState(`Update Webhook ${w.name}`);
     this.closeModal('edit-webhook-modal');
@@ -656,7 +719,39 @@ class TermesConsole {
     );
   }
 
-  // Cellulose & Utility Helpers
+  // Cellulose Cleansers & Utility Helpers
+  deleteCelluloseItem(specId) {
+    this.customConfirm(
+      'Limpiar Celulosa',
+      '¿Seguro que deseas limpiar la celulosa digerida de esta especificación?',
+      async () => {
+        if (this.state.specs[specId]) {
+          delete this.state.specs[specId].lastResult;
+          delete this.state.specs[specId].lastDigestedAt;
+          await this.saveVaultState(`Clear cellulose for ${specId}`);
+          this.showToast('Celulosa eliminada.', 'success');
+          this.renderAll();
+        }
+      }
+    );
+  }
+
+  clearAllCellulose() {
+    this.customConfirm(
+      'Limpiar Toda la Celulosa',
+      '¿Seguro que deseas limpiar la celulosa digerida de TODAS las especificaciones?',
+      async () => {
+        Object.values(this.state.specs).forEach(s => {
+          delete s.lastResult;
+          delete s.lastDigestedAt;
+        });
+        await this.saveVaultState('Clear all cellulose');
+        this.showToast('Toda la celulosa ha sido limpiada.', 'success');
+        this.renderAll();
+      }
+    );
+  }
+
   showLatestCellulose() {
     const specs = Object.values(this.state.specs || {}).filter(s => s.lastResult);
     if (specs.length > 0) {
