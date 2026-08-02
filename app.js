@@ -176,6 +176,25 @@ class TermesConsole {
         })
       });
     }
+
+    // Ensure gh-pages branch exists
+    const ghPagesCheck = await this.fetchGitHub(`/repos/${owner}/${cdnRepo}/git/ref/heads/gh-pages`);
+    if (ghPagesCheck.status === 404) {
+      const mainRef = await this.fetchGitHub(`/repos/${owner}/${cdnRepo}/git/ref/heads/main`);
+      if (mainRef.ok) {
+        const mainData = await mainRef.json();
+        const mainSha = mainData.object?.sha;
+        if (mainSha) {
+          await this.fetchGitHub(`/repos/${owner}/${cdnRepo}/git/refs`, {
+            method: 'POST',
+            body: JSON.stringify({
+              ref: 'refs/heads/gh-pages',
+              sha: mainSha
+            })
+          });
+        }
+      }
+    }
   }
 
   async loadVaultState() {
@@ -577,10 +596,6 @@ class TermesConsole {
       }
 
       const path = `api/v1/termes/${specId}.json`;
-      const cdnUrl = isPrivate
-        ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://raw.githubusercontent.com/${owner}/${targetRepo}/gh-pages/${path}`;
-
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
 
       const getRes = await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}?ref=${isPrivate ? 'main' : 'gh-pages'}`);
@@ -604,11 +619,16 @@ class TermesConsole {
 
       if (!putRes.ok && !isPrivate) {
         delete bodyPayload.branch;
-        await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}`, {
+        putRes = await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}`, {
           method: 'PUT',
           body: JSON.stringify(bodyPayload)
         });
       }
+
+      const branchUsed = bodyPayload.branch || 'main';
+      const cdnUrl = isPrivate
+        ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
+        : `https://raw.githubusercontent.com/${owner}/${targetRepo}/${branchUsed}/${path}`;
 
       this.state.termitomycesApis[apiId] = {
         apiId,
