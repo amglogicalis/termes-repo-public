@@ -130,7 +130,7 @@ class TermesConsole {
     }
   }
 
-  // Custom Glassmorphic Confirmation Modal (Replaces native browser confirm popups)
+  // Custom Glassmorphic Confirmation Modal
   customConfirm(title, message, onConfirm) {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-message').textContent = message;
@@ -240,21 +240,27 @@ class TermesConsole {
       return;
     }
 
-    tbody.innerHTML = apis.map(a => `
-      <tr>
-        <td><code>${a.apiId}</code></td>
-        <td><strong>${a.name}</strong></td>
-        <td><span class="badge badge-green">${a.status}</span></td>
-        <td><span style="font-size: 0.8rem; color: var(--text-muted);">${a.lastUpdated ? new Date(a.lastUpdated).toLocaleTimeString() : 'N/A'}</span></td>
-        <td><a href="${a.cdnUrl}" target="_blank" class="badge badge-primary">🌐 Synthetic API</a></td>
-        <td>
-          <button class="btn-icon" onclick="app.copyApiUrl('${a.cdnUrl}')" title="Copy API URL 📋">📋 Copy API</button>
-          <button class="btn-icon" onclick="app.openEditApiModal('${a.apiId}')" title="Editar API ✏️">✏️</button>
-          <button class="btn-icon" onclick="app.previewCellulose('${a.specId}')" title="Preview JSON 🧫">🧫 JSON</button>
-          <button class="btn-icon" onclick="app.deleteApi('${a.apiId}')" title="Borrar API 🗑️">🗑️</button>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = apis.map(a => {
+      const privacyBadge = a.isPrivate 
+        ? `<span class="badge badge-gold">🔒 Privado</span>` 
+        : `<span class="badge badge-green">🌐 Público</span>`;
+
+      return `
+        <tr>
+          <td><code>${a.apiId}</code></td>
+          <td><strong>${a.name}</strong></td>
+          <td>${privacyBadge}</td>
+          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${a.lastUpdated ? new Date(a.lastUpdated).toLocaleTimeString() : 'N/A'}</span></td>
+          <td><a href="${a.cdnUrl}" target="_blank" class="badge badge-primary">🌐 Endpoint API</a></td>
+          <td>
+            <button class="btn-icon" onclick="app.copyApiUrl('${a.cdnUrl}')" title="Copy API URL 📋">📋 Copy API</button>
+            <button class="btn-icon" onclick="app.openEditApiModal('${a.apiId}')" title="Editar API ✏️">✏️</button>
+            <button class="btn-icon" onclick="app.previewCellulose('${a.specId}')" title="Preview JSON 🧫">🧫 JSON</button>
+            <button class="btn-icon" onclick="app.deleteApi('${a.apiId}')" title="Borrar API 🗑️">🗑️</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   renderWebhooks() {
@@ -313,7 +319,6 @@ class TermesConsole {
     const selectorsStr = document.getElementById('spec-selectors').value.trim();
     const description = document.getElementById('spec-description').value.trim();
     const stealth = document.getElementById('spec-stealth').checked;
-    const userAgent = document.getElementById('spec-user-agent').value.trim();
 
     let selectors = {};
     try {
@@ -333,8 +338,7 @@ class TermesConsole {
       targetUrl,
       selectors,
       mudTunnel: {
-        stealth,
-        userAgent: userAgent || undefined
+        stealth
       },
       active: true,
       createdAt: now,
@@ -357,7 +361,6 @@ class TermesConsole {
     document.getElementById('edit-spec-target-url').value = s.targetUrl;
     document.getElementById('edit-spec-selectors').value = JSON.stringify(s.selectors, null, 2);
     document.getElementById('edit-spec-stealth').checked = s.mudTunnel?.stealth !== false;
-    document.getElementById('edit-spec-user-agent').value = s.mudTunnel?.userAgent || '';
     this.openModal('edit-spec-modal');
   }
 
@@ -377,8 +380,7 @@ class TermesConsole {
     }
 
     s.mudTunnel = {
-      stealth: document.getElementById('edit-spec-stealth').checked,
-      userAgent: document.getElementById('edit-spec-user-agent').value.trim() || undefined
+      stealth: document.getElementById('edit-spec-stealth').checked
     };
     s.updatedAt = new Date().toISOString();
 
@@ -418,30 +420,56 @@ class TermesConsole {
     s.lastResult = simulatedData;
     s.lastDigestedAt = new Date().toISOString();
 
-    // Publish Termitomyces Synthetic API JSON to CDN
     const owner = await this.getOwner();
     if (owner) {
+      const apiId = `api_${specId}`;
+      const existingApi = this.state.termitomycesApis[apiId];
+      const isPrivate = existingApi ? existingApi.isPrivate : false;
+
       const path = `api/v1/termes/${specId}.json`;
-      const cdnUrl = `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+      const targetRepo = isPrivate ? this.storageRepo : this.cdnRepo;
+      const cdnUrl = isPrivate
+        ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
+        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
 
-      const getRes = await this.fetchGitHub(`/repos/${owner}/${this.cdnRepo}/contents/${path}`);
+      // Fetch SHA on target repo
+      const getRes = await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}?ref=${isPrivate ? 'main' : 'gh-pages'}`);
       let sha;
       if (getRes.ok) {
         const d = await getRes.json();
         sha = d.sha;
       }
 
-      await this.fetchGitHub(`/repos/${owner}/${this.cdnRepo}/contents/${path}`, {
+      // Commit file to gh-pages branch if public, or main if private
+      const bodyPayload = {
+        message: `Digest ${s.name}`,
+        content: contentEncoded,
+        sha
+      };
+      if (!isPrivate) bodyPayload.branch = 'gh-pages';
+
+      let putRes = await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}`, {
         method: 'PUT',
-        body: JSON.stringify({ message: `Digest ${s.name}`, content: contentEncoded, sha })
+        body: JSON.stringify(bodyPayload)
       });
 
-      this.state.termitomycesApis[`api_${specId}`] = {
-        apiId: `api_${specId}`,
+      // Fallback if gh-pages branch fails
+      if (!putRes.ok && !isPrivate) {
+        delete bodyPayload.branch;
+        await this.fetchGitHub(`/repos/${owner}/${targetRepo}/contents/${path}`, {
+          method: 'PUT',
+          body: JSON.stringify(bodyPayload)
+        });
+      }
+
+      this.state.termitomycesApis[apiId] = {
+        apiId,
         specId,
         name: s.name,
         cdnUrl,
+        isPrivate,
         lastUpdated: new Date().toISOString(),
         status: 'active',
         data: simulatedData
@@ -449,7 +477,7 @@ class TermesConsole {
     }
 
     await this.saveVaultState(`Digest spec ${s.name}`);
-    this.showToast(`Digestión completada! API Sintética Termitomyces actualizada en CDN.`, 'success');
+    this.showToast(`Digestión completada! API Sintética Termitomyces actualizada.`, 'success');
     this.renderAll();
   }
 
@@ -459,6 +487,7 @@ class TermesConsole {
     if (!a) return;
     document.getElementById('edit-api-id').value = apiId;
     document.getElementById('edit-api-name').value = a.name;
+    document.getElementById('edit-api-privacy').value = a.isPrivate ? 'private' : 'public';
     document.getElementById('edit-api-status').value = a.status || 'active';
     this.openModal('edit-api-modal');
   }
@@ -470,8 +499,18 @@ class TermesConsole {
     if (!a) return;
 
     a.name = document.getElementById('edit-api-name').value.trim();
+    const newPrivacy = document.getElementById('edit-api-privacy').value === 'private';
+    a.isPrivate = newPrivacy;
     a.status = document.getElementById('edit-api-status').value;
     a.lastUpdated = new Date().toISOString();
+
+    const owner = await this.getOwner();
+    if (owner) {
+      const path = `api/v1/termes/${a.specId}.json`;
+      a.cdnUrl = newPrivacy
+        ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
+        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+    }
 
     await this.saveVaultState(`Update Termitomyces API ${a.name}`);
     this.closeModal('edit-api-modal');

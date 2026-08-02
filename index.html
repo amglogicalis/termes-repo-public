@@ -37,7 +37,7 @@
           <span class="stat-value" id="stat-apis" style="color: var(--primary);">0</span>
         </div>
         <div class="stat-card">
-          <span class="stat-title">🦟 Alates Webhooks</span>
+          <span class="stat-title">`🦟 Alates Webhooks`</span>
           <span class="stat-value" id="stat-webhooks" style="color: var(--accent-gold);">0</span>
         </div>
         <div class="stat-card">
@@ -114,9 +114,9 @@
               <tr>
                 <th>API ID</th>
                 <th>Spec de Origen</th>
-                <th>Estado CDN</th>
+                <th>Acceso</th>
                 <th>Última Sincronización</th>
-                <th>Endpoint Público</th>
+                <th>Endpoint Público / Privado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -212,14 +212,10 @@
         <!-- MUD TUNNEL PROXY OPTIONS -->
         <div class="p-3 bg-black-05 rounded mb-3 border-left-vermilion" style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px;">
           <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.6rem;">🕳️ Mud Tunnel Stealth Config (Anti-Bot Bypass)</h4>
-          <div class="form-group" style="margin-bottom: 0.5rem;">
+          <div class="form-group" style="margin-bottom: 0;">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
               <input type="checkbox" id="spec-stealth" checked style="width: auto;"> Activar Sigilo Stealth
             </label>
-          </div>
-          <div class="form-group">
-            <label for="spec-user-agent">User-Agent Personalizado (Opcional)</label>
-            <input type="text" id="spec-user-agent" placeholder="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0">
           </div>
         </div>
 
@@ -259,14 +255,10 @@
 
         <div class="p-3 bg-black-05 rounded mb-3 border-left-vermilion" style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px;">
           <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.6rem;">🕳️ Mud Tunnel Stealth Config</h4>
-          <div class="form-group" style="margin-bottom: 0.5rem;">
+          <div class="form-group" style="margin-bottom: 0;">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
               <input type="checkbox" id="edit-spec-stealth" style="width: auto;"> Activar Sigilo Stealth
             </label>
-          </div>
-          <div class="form-group">
-            <label for="edit-spec-user-agent">User-Agent Personalizado</label>
-            <input type="text" id="edit-spec-user-agent">
           </div>
         </div>
 
@@ -290,6 +282,13 @@
         <div class="form-group">
           <label for="edit-api-name">Nombre de la API Sintética</label>
           <input type="text" id="edit-api-name" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-api-privacy">Acceso / Visibilidad de la API</label>
+          <select id="edit-api-privacy" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="public">🌐 Público (CDN Global a 0ms)</option>
+            <option value="private">🔒 Privado (Bóveda Encriptada .termes-storage)</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="edit-api-status">Estado de la API</label>
