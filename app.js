@@ -133,6 +133,7 @@ class TermesConsole {
   renderAll() {
     this.renderStats();
     this.renderSpecs();
+    this.renderCelluloseTable();
     this.renderTermitomycesApis();
     this.renderWebhooks();
     this.renderBridges();
@@ -172,10 +173,36 @@ class TermesConsole {
           <td><span class="badge badge-gold">${selectorsSummary}</span></td>
           <td>${stealthBadge}</td>
           <td>
-            <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡</button>
-            <button class="btn-icon" onclick="app.previewCellulose('${s.specId}')" title="Preview Cellulose 🧫">🧫</button>
+            <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡ Digest</button>
+            <button class="btn-icon" onclick="app.previewCellulose('${s.specId}')" title="Preview Cellulose 🧫">🧫 Celulosa</button>
             <button class="btn-icon" onclick="app.openEditSpecModal('${s.specId}')" title="Edit">✏️</button>
             <button class="btn-icon" onclick="app.deleteSpec('${s.specId}')" title="Delete">🗑️</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  renderCelluloseTable() {
+    const tbody = document.getElementById('cellulose-table-body');
+    const specs = Object.values(this.state.specs || {}).filter(s => s.lastResult);
+
+    if (specs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin celulosa digerida aún. Haz clic en ⚡ Digest en cualquier especificación del Termitarium.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = specs.map(s => {
+      const jsonLen = JSON.stringify(s.lastResult || {}).length;
+      return `
+        <tr>
+          <td><code>dig_${s.specId}</code></td>
+          <td><strong>${s.name}</strong></td>
+          <td><a href="${s.targetUrl}" target="_blank" style="color: var(--text-muted); font-size: 0.82rem;">${s.targetUrl}</a></td>
+          <td><span class="badge badge-green">${(jsonLen / 1024).toFixed(1)} KB HTML/JSON</span></td>
+          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${s.lastDigestedAt ? new Date(s.lastDigestedAt).toLocaleTimeString() : 'Recent'}</span></td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="app.previewCellulose('${s.specId}')">🧫 Ver Celulosa Digerida</button>
           </td>
         </tr>
       `;
@@ -393,6 +420,15 @@ class TermesConsole {
     await this.saveVaultState(`Digest spec ${s.name}`);
     this.showToast(`Digestión completada! API Sintética Termitomyces actualizada en CDN.`, 'success');
     this.renderAll();
+  }
+
+  showLatestCellulose() {
+    const specs = Object.values(this.state.specs || {}).filter(s => s.lastResult);
+    if (specs.length > 0) {
+      this.previewCellulose(specs[0].specId);
+    } else {
+      this.previewCellulose('');
+    }
   }
 
   previewCellulose(specId) {
