@@ -278,6 +278,104 @@
     </div>
   </div>
 
+  <!-- MODAL: EDIT TERMITOMYCES API -->
+  <div id="edit-api-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ Editar API Sintética Termitomyces</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-api-modal')">&times;</button>
+      </div>
+      <form id="edit-api-form" onsubmit="app.handleUpdateApi(event)">
+        <input type="hidden" id="edit-api-id">
+        <div class="form-group">
+          <label for="edit-api-name">Nombre de la API Sintética</label>
+          <input type="text" id="edit-api-name" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-api-status">Estado de la API</label>
+          <select id="edit-api-status" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="active">Active (Sincronizada)</option>
+            <option value="syncing">Syncing (En actualización)</option>
+            <option value="paused">Paused (Pausada)</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-api-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Update API ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT WEBHOOK -->
+  <div id="edit-webhook-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ Editar Webhook Invertido (Alates Swarm)</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-webhook-modal')">&times;</button>
+      </div>
+      <form id="edit-webhook-form" onsubmit="app.handleUpdateWebhook(event)">
+        <input type="hidden" id="edit-webhook-id">
+        <div class="form-group">
+          <label for="edit-webhook-name">Nombre de la Regla de Alerta</label>
+          <input type="text" id="edit-webhook-name" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-webhook-url">URL Webhook Destino</label>
+          <input type="url" id="edit-webhook-url" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-webhook-condition">Condición de Disparo</label>
+          <select id="edit-webhook-condition" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="on_change">Al cambiar el contenido DOM (Recomendado)</option>
+            <option value="always">En cada digestión</option>
+            <option value="on_match">Al coincidir texto específico</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-webhook-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Update Webhook ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT BRIDGE -->
+  <div id="edit-bridge-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ Editar Puente Multi-Cloud (Trophallaxis)</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-bridge-modal')">&times;</button>
+      </div>
+      <form id="edit-bridge-form" onsubmit="app.handleUpdateBridge(event)">
+        <input type="hidden" id="edit-bridge-id">
+        <div class="form-group">
+          <label for="edit-bridge-name">Nombre del Puente</label>
+          <input type="text" id="edit-bridge-name" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-bridge-type">Proveedor / Tipo de Destino</label>
+          <select id="edit-bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="aws_s3">AWS S3 / EventBridge / DynamoDB</option>
+            <option value="azure_blob">Azure Blob / EventGrid</option>
+            <option value="gcp_storage">GCP Storage / PubSub</option>
+            <option value="terra_combase">Terra Combase Database</option>
+            <option value="terra_rolla">Terra Rolla Object Store</option>
+            <option value="generic_webhook">Generic HTTP Endpoint</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-bridge-endpoint">URL del Endpoint del Puente</label>
+          <input type="url" id="edit-bridge-endpoint" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-bridge-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Update Bridge ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: CELLULOSE PROCESSOR PREVIEW -->
   <div id="cellulose-preview-modal" class="modal">
     <div class="modal-content" style="max-width: 720px;">
@@ -359,6 +457,21 @@
           <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOM CONFIRMATION MODAL -->
+  <div id="custom-confirm-modal" class="modal">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="confirm-title" style="color: var(--primary);">⚠️ Confirmación</h3>
+        <button class="close-btn" onclick="app.closeModal('custom-confirm-modal')">&times;</button>
+      </div>
+      <p id="confirm-message" style="color: var(--text); font-size: 0.9rem; margin-bottom: 1.5rem;"></p>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="app.closeModal('custom-confirm-modal')">Cancelar</button>
+        <button type="button" id="confirm-ok-btn" class="btn btn-primary btn-create-black">Confirmar 🗑️</button>
+      </div>
     </div>
   </div>
 
