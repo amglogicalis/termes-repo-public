@@ -84,7 +84,7 @@
                 <th>Spec ID</th>
                 <th>Nombre Receta</th>
                 <th>URL Objetivo</th>
-                <th>Selectores</th>
+                <th>Repositorio CDN Destino</th>
                 <th>🕳️ Sigilo / Stealth</th>
                 <th>Acciones</th>
               </tr>
@@ -142,7 +142,7 @@
                 <th>API ID</th>
                 <th>Spec de Origen</th>
                 <th>Visibilidad</th>
-                <th>Última Sincronización</th>
+                <th>Repositorio CDN</th>
                 <th>Endpoint Público / Privado</th>
                 <th>Acciones</th>
               </tr>
@@ -236,13 +236,17 @@
           <textarea id="spec-selectors" rows="3" placeholder='{"titulo": "h1.title", "precio": ".product-price"}' required></textarea>
         </div>
 
-        <!-- TERMITOMYCES API CULTIVATION OPTIONS -->
+        <!-- TERMITOMYCES API CULTIVATION & CUSTOM CDN REPO OPTIONS -->
         <div style="background: rgba(249, 51, 24, 0.08); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px; margin-bottom: 1rem;">
           <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.5rem;">🍄 Cultivo de API Sintética Inversa (Termitomyces)</h4>
           <div class="form-group" style="margin-bottom: 0.5rem;">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
               <input type="checkbox" id="spec-cultivate-api" checked style="width: auto;"> Cultivar API Sintética automáticamente al digestar
             </label>
+          </div>
+          <div class="form-group">
+            <label for="spec-cdn-repo">Repositorio CDN Destino (en tu cuenta de GitHub)</label>
+            <input type="text" id="spec-cdn-repo" placeholder="termes-repo-public" value="termes-repo-public" required>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="spec-api-privacy">Visibilidad de la API Sintética</label>
@@ -332,6 +336,10 @@
               <input type="checkbox" id="edit-spec-cultivate-api" style="width: auto;"> Cultivar API Sintética automáticamente
             </label>
           </div>
+          <div class="form-group">
+            <label for="edit-spec-cdn-repo">Repositorio CDN Destino</label>
+            <input type="text" id="edit-spec-cdn-repo" required>
+          </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="edit-spec-api-privacy">Visibilidad de la API Sintética</label>
             <select id="edit-spec-api-privacy" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
@@ -370,6 +378,10 @@
         <div class="form-group">
           <label for="edit-api-name">Nombre de la API Sintética</label>
           <input type="text" id="edit-api-name" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-api-cdn-repo">Repositorio CDN Destino</label>
+          <input type="text" id="edit-api-cdn-repo" required>
         </div>
         <div class="form-group">
           <label for="edit-api-privacy">Acceso / Visibilidad de la API</label>
@@ -437,6 +449,53 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-webhook-modal')">Cancel</button>
           <button type="submit" class="btn btn-primary btn-create-black">Update Webhook ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE WEBHOOK -->
+  <div id="create-webhook-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🦟 Crear Webhook Invertido (Alates Swarm)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-webhook-modal')">&times;</button>
+      </div>
+      <form id="create-webhook-form" onsubmit="app.handleCreateWebhook(event)">
+        <div class="form-group">
+          <label for="webhook-name">Nombre de la Regla de Alerta</label>
+          <input type="text" id="webhook-name" placeholder="Notificar cambio de precio" required>
+        </div>
+        <div class="form-group">
+          <label for="webhook-url">URL del Webhook de tu Aplicación</label>
+          <input type="url" id="webhook-url" placeholder="https://mi-app.com/api/v1/webhook" required>
+        </div>
+        <div class="form-group">
+          <label for="webhook-method">Método HTTP</label>
+          <select id="webhook-method" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="webhook-condition">Condición de Disparo</label>
+          <select id="webhook-condition" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="on_change">Al cambiar el contenido DOM (Recomendado)</option>
+            <option value="always">En cada digestión</option>
+            <option value="on_match">Al coincidir texto específico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="webhook-headers">Cabeceras HTTP Personalizadas (JSON Opcional)</label>
+          <input type="text" id="webhook-headers" placeholder='{"Authorization": "Bearer mi_token"}'>
+        </div>
+        <div class="form-group">
+          <label for="webhook-template">Plantilla JSON Personalizada (Opcional)</label>
+          <textarea id="webhook-template" rows="3" placeholder='{"evento": "DOM_CAMBIO", "datos": "{{data}}"}'></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-webhook-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
         </div>
       </form>
     </div>
