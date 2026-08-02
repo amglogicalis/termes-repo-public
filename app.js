@@ -20,21 +20,78 @@ class TermesConsole {
   async init() {
     if (this.token) {
       document.getElementById('github-token').value = this.token;
-      await this.loadVaultState();
+      const owner = await this.getOwner();
+      if (owner) {
+        this.updateAuthUI(true, owner);
+        await this.loadVaultState();
+      } else {
+        this.updateAuthUI(false);
+      }
+    } else {
+      this.updateAuthUI(false);
     }
     this.renderAll();
   }
 
-  saveToken() {
+  updateAuthUI(isConnected, username = '') {
+    const disconnectedBar = document.getElementById('auth-disconnected');
+    const connectedBar = document.getElementById('auth-connected');
+    const unauthContainer = document.getElementById('app-unauth-container');
+    const authContent = document.getElementById('app-auth-content');
+    const userBadge = document.getElementById('connected-user');
+
+    if (isConnected) {
+      if (disconnectedBar) disconnectedBar.classList.add('hidden');
+      if (connectedBar) connectedBar.classList.remove('hidden');
+      if (unauthContainer) unauthContainer.classList.add('hidden');
+      if (authContent) authContent.classList.remove('hidden');
+      if (userBadge) userBadge.textContent = `👤 @${username}`;
+    } else {
+      if (disconnectedBar) disconnectedBar.classList.remove('hidden');
+      if (connectedBar) connectedBar.classList.add('hidden');
+      if (unauthContainer) unauthContainer.classList.remove('hidden');
+      if (authContent) authContent.classList.add('hidden');
+    }
+  }
+
+  async saveToken() {
     const val = document.getElementById('github-token').value.trim();
     if (!val) {
       this.showToast('Please enter a valid GitHub token.', 'error');
       return;
     }
     this.token = val;
+    const owner = await this.getOwner();
+    if (!owner) {
+      this.showToast('Invalid GitHub Token or Bad Credentials.', 'error');
+      this.token = '';
+      return;
+    }
+
     localStorage.setItem('termes_github_token', val);
-    this.showToast('Token saved! Loading Termitarium state...', 'success');
-    this.loadVaultState();
+    this.updateAuthUI(true, owner);
+    this.showToast(`Connected as @${owner}! Loading Termitarium state...`, 'success');
+    await this.loadVaultState();
+  }
+
+  async saveTokenFromLock() {
+    const val = document.getElementById('unauth-token-input').value.trim();
+    if (!val) {
+      this.showToast('Por favor introduce un token de GitHub válido.', 'error');
+      return;
+    }
+    document.getElementById('github-token').value = val;
+    await this.saveToken();
+  }
+
+  disconnect() {
+    this.token = '';
+    this.owner = '';
+    localStorage.removeItem('termes_github_token');
+    document.getElementById('github-token').value = '';
+    document.getElementById('unauth-token-input').value = '';
+    this.updateAuthUI(false);
+    this.showToast('Desconectado de la Termes Console.', 'info');
   }
 
   async fetchGitHub(endpoint, options = {}) {
@@ -53,11 +110,16 @@ class TermesConsole {
 
   async getOwner() {
     if (this.owner) return this.owner;
-    const res = await this.fetchGitHub('/user');
-    if (res.ok) {
-      const u = await res.json();
-      this.owner = u.login;
-      return this.owner;
+    if (!this.token) return '';
+    try {
+      const res = await this.fetchGitHub('/user');
+      if (res.ok) {
+        const u = await res.json();
+        this.owner = u.login;
+        return this.owner;
+      }
+    } catch {
+      return '';
     }
     return '';
   }
@@ -101,9 +163,13 @@ class TermesConsole {
         if (!this.state.webhooks) this.state.webhooks = {};
         if (!this.state.trophallaxisBridges) this.state.trophallaxisBridges = {};
 
-        // Migrate API state defaults
+        // Migrate API state defaults & ensure raw URLs
         Object.values(this.state.termitomycesApis).forEach(a => {
           if (a.isPrivate === undefined) a.isPrivate = false;
+          const path = `api/v1/termes/${a.specId}.json`;
+          if (!a.isPrivate) {
+            a.cdnUrl = `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
+          }
         });
 
         this.showToast('Termitarium Vault loaded successfully!', 'success');
@@ -207,19 +273,17 @@ class TermesConsole {
 
   renderCelluloseTable() {
     const tbody = document.getElementById('cellulose-table-body');
-    const specs = Object.values(this.state.specs || {});
+    // Strictly filter specs that actually have digested cellulose (lastResult)
+    const specsWithCellulose = Object.values(this.state.specs || {}).filter(s => !!s.lastResult);
 
-    if (specs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin celulosa digerida. Haz clic en ⚡ Digest en cualquier especificación del Termitarium.</td></tr>`;
+    if (specsWithCellulose.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin celulosa digerida en la sesión actual. Ejecuta un Digest ⚡ en el Termitarium.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = specs.map(s => {
-      const hasResult = !!s.lastResult;
-      const jsonLen = hasResult ? JSON.stringify(s.lastResult || {}).length : 0;
-      const statusBadge = hasResult 
-        ? `<span class="badge badge-green">🧫 Celulosa Digerida (${(jsonLen / 1024).toFixed(1)} KB)</span>` 
-        : `<span class="badge badge-gold">⏳ Pendiente de Digestión</span>`;
+    tbody.innerHTML = specsWithCellulose.map(s => {
+      const jsonLen = JSON.stringify(s.lastResult || {}).length;
+      const statusBadge = `<span class="badge badge-green">🧫 Celulosa Digerida (${(jsonLen / 1024).toFixed(1)} KB)</span>`;
 
       return `
         <tr>
@@ -227,7 +291,7 @@ class TermesConsole {
           <td><strong>${s.name}</strong></td>
           <td><a href="${s.targetUrl}" target="_blank" style="color: var(--text-muted); font-size: 0.82rem;">${s.targetUrl}</a></td>
           <td>${statusBadge}</td>
-          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${s.lastDigestedAt ? new Date(s.lastDigestedAt).toLocaleTimeString() : 'No ejecutado'}</span></td>
+          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${s.lastDigestedAt ? new Date(s.lastDigestedAt).toLocaleTimeString() : 'Ahora'}</span></td>
           <td>
             <button class="btn btn-outline btn-sm" onclick="app.previewCellulose('${s.specId}')">🧫 Ver Celulosa</button>
             <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡ Digest</button>
@@ -468,8 +532,8 @@ class TermesConsole {
 
       const path = `api/v1/termes/${specId}.json`;
       const targetRepo = isPrivate ? this.storageRepo : this.cdnRepo;
-      
-      // Provide raw GitHub fallback URL for 200 OK immediate availability
+
+      // Provide raw GitHub CDN URL for 200 OK immediate availability
       const cdnUrl = isPrivate
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
         : `https://raw.githubusercontent.com/${owner}/${this.cdnRepo}/gh-pages/${path}`;
@@ -729,7 +793,7 @@ class TermesConsole {
           delete this.state.specs[specId].lastResult;
           delete this.state.specs[specId].lastDigestedAt;
           await this.saveVaultState(`Clear cellulose for ${specId}`);
-          this.showToast('Celulosa eliminada.', 'success');
+          this.showToast('Celulosa eliminada de la tabla.', 'success');
           this.renderAll();
         }
       }
@@ -746,7 +810,7 @@ class TermesConsole {
           delete s.lastDigestedAt;
         });
         await this.saveVaultState('Clear all cellulose');
-        this.showToast('Toda la celulosa ha sido limpiada.', 'success');
+        this.showToast('Toda la celulosa ha sido eliminada de la tabla.', 'success');
         this.renderAll();
       }
     );
