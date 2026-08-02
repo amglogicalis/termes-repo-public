@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo_termes.png" alt="TERMES Logo" width="220" />
+  <img src="https://raw.githubusercontent.com/amglogicalis/termes-repo-public/main/assets/logo_termes.png" alt="TERMES Logo" width="220" />
 </p>
 
 <h1 align="center">🕷️ TERMES — Public Inverted APIs & Web Digesting Engine</h1>
@@ -18,7 +18,7 @@
 ---
 
 <p align="center">
-  <img src="assets/console_web_termes_preview.png" alt="TERMES Web Console Preview" width="100%" style="border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);" />
+  <img src="https://raw.githubusercontent.com/amglogicalis/termes-repo-public/main/assets/console_web_termes_preview.png" alt="TERMES Web Console Preview" width="100%" style="border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);" />
 </p>
 
 ---
