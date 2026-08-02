@@ -4,7 +4,7 @@ class TermesConsole {
   constructor() {
     this.token = localStorage.getItem('termes_github_token') || '';
     this.storageRepo = '.termes-storage';
-    this.cdnRepo = 'termes-repo-public';
+    this.defaultCdnRepo = 'termes-repo-public';
     this.state = {
       specs: {},
       termitomycesApis: {},
@@ -142,6 +142,42 @@ class TermesConsole {
     }
   }
 
+  async ensureCdnRepo(cdnRepo = 'termes-repo-public') {
+    const owner = await this.getOwner();
+    if (!owner) return;
+    const res = await this.fetchGitHub(`/repos/${owner}/${cdnRepo}`);
+    if (res.status === 404) {
+      // Auto-create CDN repository for the user
+      await this.fetchGitHub('/user/repos', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: cdnRepo,
+          description: '🍄 TERMES — Public Inverted APIs & CDN Storage',
+          private: false,
+          auto_init: true
+        })
+      });
+      await new Promise(r => setTimeout(r, 1200));
+
+      // Enable Pages
+      await this.fetchGitHub(`/repos/${owner}/${cdnRepo}/pages`, {
+        method: 'POST',
+        body: JSON.stringify({
+          source: { branch: 'main', path: '/' }
+        })
+      });
+
+      // Write .nojekyll
+      await this.fetchGitHub(`/repos/${owner}/${cdnRepo}/contents/.nojekyll`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          message: 'Initialize .nojekyll',
+          content: ''
+        })
+      });
+    }
+  }
+
   async loadVaultState() {
     try {
       await this.ensureStorageRepo();
@@ -166,9 +202,10 @@ class TermesConsole {
         // Migrate API state defaults & ensure CDN URLs
         Object.values(this.state.termitomycesApis).forEach(a => {
           if (a.isPrivate === undefined) a.isPrivate = false;
+          const targetRepo = a.cdnRepo || this.defaultCdnRepo;
           const path = `api/v1/termes/${a.specId}.json`;
           if (!a.isPrivate) {
-            a.cdnUrl = `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+            a.cdnUrl = `https://${owner}.github.io/${targetRepo}/${path}`;
           }
         });
 
@@ -249,7 +286,7 @@ class TermesConsole {
     }
 
     tbody.innerHTML = specs.map(s => {
-      const selectorsSummary = Object.keys(s.selectors || {}).join(', ') || 'None';
+      const cdnRepo = s.cdnRepo || this.defaultCdnRepo;
       const mudTunnel = s.mudTunnel || { stealth: true };
       const stealthBadge = mudTunnel.stealth ? `<span class="badge badge-green">🕳️ Stealth</span>` : `<span class="badge badge-gold">Standard</span>`;
 
@@ -258,7 +295,7 @@ class TermesConsole {
           <td><code>${s.specId}</code></td>
           <td><strong>${s.name}</strong></td>
           <td><a href="${s.targetUrl}" target="_blank" style="color: var(--primary); font-size: 0.82rem;">${s.targetUrl}</a></td>
-          <td><span class="badge badge-gold">${selectorsSummary}</span></td>
+          <td><span class="badge badge-gold">📦 ${cdnRepo}</span></td>
           <td>${stealthBadge}</td>
           <td>
             <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡ Digest</button>
@@ -273,7 +310,6 @@ class TermesConsole {
 
   renderCelluloseTable() {
     const tbody = document.getElementById('cellulose-table-body');
-    // Strictly filter specs that actually have digested cellulose (lastResult)
     const specsWithCellulose = Object.values(this.state.specs || {}).filter(s => !!s.lastResult);
 
     if (specsWithCellulose.length === 0) {
@@ -315,13 +351,14 @@ class TermesConsole {
       const privacyBadge = a.isPrivate 
         ? `<span class="badge badge-gold">🔒 Privado</span>` 
         : `<span class="badge badge-green">🌐 Público</span>`;
+      const cdnRepo = a.cdnRepo || this.defaultCdnRepo;
 
       return `
         <tr>
           <td><code>${a.apiId}</code></td>
           <td><strong>${a.name}</strong></td>
           <td>${privacyBadge}</td>
-          <td><span style="font-size: 0.8rem; color: var(--text-muted);">${a.lastUpdated ? new Date(a.lastUpdated).toLocaleTimeString() : 'N/A'}</span></td>
+          <td><span class="badge badge-gold">📦 ${cdnRepo}</span></td>
           <td><a href="${a.cdnUrl}" target="_blank" class="badge badge-primary">🌐 Endpoint API</a></td>
           <td>
             <button class="btn-icon" onclick="app.copyApiUrl('${a.cdnUrl}')" title="Copy API URL 📋">📋 Copy API</button>
@@ -392,6 +429,7 @@ class TermesConsole {
     const stealth = document.getElementById('spec-stealth').checked;
 
     const cultivateApi = document.getElementById('spec-cultivate-api').checked;
+    const cdnRepo = document.getElementById('spec-cdn-repo').value.trim() || this.defaultCdnRepo;
     const apiIsPrivate = document.getElementById('spec-api-privacy').value === 'private';
 
     const webhookEnable = document.getElementById('spec-webhook-enable').checked;
@@ -439,6 +477,7 @@ class TermesConsole {
       selectors,
       mudTunnel: { stealth },
       cultivateApi,
+      cdnRepo,
       apiIsPrivate,
       webhook: webhookConfig,
       active: true,
@@ -463,6 +502,7 @@ class TermesConsole {
     document.getElementById('edit-spec-selectors').value = JSON.stringify(s.selectors, null, 2);
     document.getElementById('edit-spec-stealth').checked = s.mudTunnel?.stealth !== false;
     document.getElementById('edit-spec-cultivate-api').checked = s.cultivateApi !== false;
+    document.getElementById('edit-spec-cdn-repo').value = s.cdnRepo || this.defaultCdnRepo;
     document.getElementById('edit-spec-api-privacy').value = s.apiIsPrivate ? 'private' : 'public';
     this.openModal('edit-spec-modal');
   }
@@ -486,6 +526,7 @@ class TermesConsole {
       stealth: document.getElementById('edit-spec-stealth').checked
     };
     s.cultivateApi = document.getElementById('edit-spec-cultivate-api').checked;
+    s.cdnRepo = document.getElementById('edit-spec-cdn-repo').value.trim() || this.defaultCdnRepo;
     s.apiIsPrivate = document.getElementById('edit-spec-api-privacy').value === 'private';
     s.updatedAt = new Date().toISOString();
 
@@ -529,14 +570,16 @@ class TermesConsole {
     if (owner && s.cultivateApi !== false) {
       const apiId = `api_${specId}`;
       const isPrivate = s.apiIsPrivate === true;
+      const targetRepo = isPrivate ? this.storageRepo : (s.cdnRepo || this.defaultCdnRepo);
+
+      if (!isPrivate) {
+        await this.ensureCdnRepo(targetRepo);
+      }
 
       const path = `api/v1/termes/${specId}.json`;
-      const targetRepo = isPrivate ? this.storageRepo : this.cdnRepo;
-
-      // Provide GitHub Pages CDN URL for public APIs
       const cdnUrl = isPrivate
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+        : `https://${owner}.github.io/${targetRepo}/${path}`;
 
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
 
@@ -572,6 +615,7 @@ class TermesConsole {
         specId,
         name: s.name,
         cdnUrl,
+        cdnRepo: targetRepo,
         isPrivate,
         lastUpdated: new Date().toISOString(),
         status: 'active',
@@ -590,6 +634,7 @@ class TermesConsole {
     if (!a) return;
     document.getElementById('edit-api-id').value = apiId;
     document.getElementById('edit-api-name').value = a.name;
+    document.getElementById('edit-api-cdn-repo').value = a.cdnRepo || this.defaultCdnRepo;
     document.getElementById('edit-api-privacy').value = a.isPrivate ? 'private' : 'public';
     document.getElementById('edit-api-status').value = a.status || 'active';
     this.openModal('edit-api-modal');
@@ -602,6 +647,7 @@ class TermesConsole {
     if (!a) return;
 
     a.name = document.getElementById('edit-api-name').value.trim();
+    a.cdnRepo = document.getElementById('edit-api-cdn-repo').value.trim() || this.defaultCdnRepo;
     const newPrivacy = document.getElementById('edit-api-privacy').value === 'private';
     a.isPrivate = newPrivacy;
     a.status = document.getElementById('edit-api-status').value;
@@ -612,7 +658,7 @@ class TermesConsole {
       const path = `api/v1/termes/${a.specId}.json`;
       a.cdnUrl = newPrivacy
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://${owner}.github.io/${this.cdnRepo}/${path}`;
+        : `https://${owner}.github.io/${a.cdnRepo}/${path}`;
     }
 
     await this.saveVaultState(`Update Termitomyces API ${a.name}`);
