@@ -205,7 +205,7 @@ class TermesConsole {
           const targetRepo = a.cdnRepo || this.defaultCdnRepo;
           const path = `api/v1/termes/${a.specId}.json`;
           if (!a.isPrivate) {
-            a.cdnUrl = `https://${owner}.github.io/${targetRepo}/${path}`;
+            a.cdnUrl = `https://raw.githubusercontent.com/${owner}/${targetRepo}/gh-pages/${path}`;
           }
         });
 
@@ -579,7 +579,7 @@ class TermesConsole {
       const path = `api/v1/termes/${specId}.json`;
       const cdnUrl = isPrivate
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://${owner}.github.io/${targetRepo}/${path}`;
+        : `https://raw.githubusercontent.com/${owner}/${targetRepo}/gh-pages/${path}`;
 
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
 
@@ -658,7 +658,7 @@ class TermesConsole {
       const path = `api/v1/termes/${a.specId}.json`;
       a.cdnUrl = newPrivacy
         ? `https://api.github.com/repos/${owner}/${this.storageRepo}/contents/${path}`
-        : `https://${owner}.github.io/${a.cdnRepo}/${path}`;
+        : `https://raw.githubusercontent.com/${owner}/${a.cdnRepo}/gh-pages/${path}`;
     }
 
     await this.saveVaultState(`Update Termitomyces API ${a.name}`);
