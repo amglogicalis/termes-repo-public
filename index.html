@@ -46,6 +46,30 @@
         </div>
       </div>
 
+      <!-- NASUTE WORKERS & MUD TUNNEL PROXY DASHBOARD CARD -->
+      <section class="card" style="border-left: 4px solid var(--primary);">
+        <div class="section-header">
+          <h2 class="section-title">👃 Nasute Workers & 🕳️ Mud Tunnel Proxy (Headless Stealth Engine)</h2>
+          <span class="badge badge-green">🟢 Active Engine ($0 Compute)</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem;">
+          <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--primary); font-size: 0.9rem; margin-bottom: 0.4rem;">👃 Nasute Execution Workers</h4>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">Ejecutores Headless (Playwright / Puppeteer) en GitHub Actions runners.</p>
+            <span class="badge badge-primary">Chromium / WebKit</span>
+            <span class="badge badge-gold">Auto-Scroll & JS Render</span>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--accent-gold); font-size: 0.9rem; margin-bottom: 0.4rem;">🕳️ Mud Tunnel Stealth Proxy</h4>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">Capa de sigilo, rotación de User-Agents y evasión de anti-bots.</p>
+            <span class="badge badge-green">Anti-Bot Bypass Active</span>
+            <span class="badge badge-blue">User-Agent Rotation Pool</span>
+          </div>
+        </div>
+      </section>
+
       <!-- TERMITARIUM SECTION -->
       <section class="card">
         <div class="section-header">
@@ -68,6 +92,34 @@
             <tbody id="specs-table-body">
               <tr>
                 <td colspan="6" style="text-align: center; color: var(--text-muted);">No hay especificaciones creadas en el Termitarium.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CELLULOSE PROCESSOR DIGESTION DASHBOARD -->
+      <section class="card" style="border-left: 4px solid var(--accent-green);">
+        <div class="section-header">
+          <h2 class="section-title">🧫 Cellulose Processor — Procesador & Limpiador de Celulosa (DOM/HTML)</h2>
+          <button class="btn btn-outline btn-sm" onclick="app.showLatestCellulose()">🧫 Inspect Latest Cellulose</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Digestion ID</th>
+                <th>Spec de Origen</th>
+                <th>URL Objetivo</th>
+                <th>Tamaño Celulosa (HTML)</th>
+                <th>Tiempo Digestión</th>
+                <th>Vista Previa Digerida</th>
+              </tr>
+            </thead>
+            <tbody id="cellulose-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">Sin celulosa digerida en la sesión actual. Ejecuta un Digest ⚡ en el Termitarium.</td>
               </tr>
             </tbody>
           </table>
