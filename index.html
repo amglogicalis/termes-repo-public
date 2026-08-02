@@ -14,7 +14,6 @@
     <div class="brand">
       <img src="assets/logo_termes.png" alt="TERMES Logo">
       <span class="brand-title">TERMES CONSOLE</span>
-      <span class="brand-badge">$0 INVERTED APIS</span>
     </div>
 
     <div class="auth-bar">
@@ -34,15 +33,15 @@
           <span class="stat-value" id="stat-specs">0</span>
         </div>
         <div class="stat-card">
-          <span class="stat-title">Inverted APIs Active</span>
+          <span class="stat-title">🍄 Termitomyces APIs</span>
           <span class="stat-value" id="stat-apis" style="color: var(--primary);">0</span>
         </div>
         <div class="stat-card">
-          <span class="stat-title">Alates Webhooks</span>
+          <span class="stat-title">🦟 Alates Webhooks</span>
           <span class="stat-value" id="stat-webhooks" style="color: var(--accent-gold);">0</span>
         </div>
         <div class="stat-card">
-          <span class="stat-title">Trophallaxis Bridges</span>
+          <span class="stat-title">🔄 Trophallaxis Bridges</span>
           <span class="stat-value" id="stat-bridges" style="color: var(--accent-blue);">0</span>
         </div>
       </div>
@@ -50,7 +49,7 @@
       <!-- TERMITARIUM SECTION -->
       <section class="card">
         <div class="section-header">
-          <h2 class="section-title">🏰 Termitarium — Inverted APIs & Spec Manager</h2>
+          <h2 class="section-title">🏰 Termitarium — Recetas & Especificaciones de Extracción</h2>
           <button class="btn btn-primary btn-create-black" onclick="app.openModal('create-spec-modal')">Create Spec ➕</button>
         </div>
 
@@ -59,16 +58,43 @@
             <thead>
               <tr>
                 <th>Spec ID</th>
-                <th>Name</th>
-                <th>Target URL</th>
-                <th>Selectors</th>
-                <th>Inverted API URL</th>
-                <th>Actions</th>
+                <th>Nombre Receta</th>
+                <th>URL Objetivo</th>
+                <th>Selectores</th>
+                <th>👃 Nasute / 🕳️ Mud Tunnel</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="specs-table-body">
               <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted);">No extraction specs created yet in Termitarium.</td>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">No hay especificaciones creadas en el Termitarium.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TERMITOMYCES SYNTHETIC APIS SECTION -->
+      <section class="card">
+        <div class="section-header">
+          <h2 class="section-title">🍄 Termitomyces — Cultivo de APIs Sintéticas Inversas (0ms CDN)</h2>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>API ID</th>
+                <th>Spec de Origen</th>
+                <th>Estado CDN</th>
+                <th>Última Sincronización</th>
+                <th>Endpoint Público</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="apis-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">Sin APIs Sintéticas cultivadas aún. Digiere una especificación para publicar.</td>
               </tr>
             </tbody>
           </table>
@@ -78,7 +104,7 @@
       <!-- ALATES SWARM INVERTED WEBHOOKS SECTION -->
       <section class="card">
         <div class="section-header">
-          <h2 class="section-title">🦟 Alates Swarm — Inverted Webhooks (Site-to-Webhook)</h2>
+          <h2 class="section-title">🦟 Alates Swarm — Webhooks Invertidos (Site-to-Webhook)</h2>
           <button class="btn btn-primary btn-create-black" onclick="app.openModal('create-webhook-modal')">Create Webhook ➕</button>
         </div>
 
@@ -87,16 +113,16 @@
             <thead>
               <tr>
                 <th>Rule ID</th>
-                <th>Name</th>
-                <th>Condition</th>
-                <th>Target Webhook URL</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Nombre Alerta</th>
+                <th>Condición Disparo</th>
+                <th>URL Webhook Destino</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="webhooks-table-body">
               <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted);">No Inverted Webhooks configured.</td>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">Sin Webhooks Invertidos configurados.</td>
               </tr>
             </tbody>
           </table>
@@ -106,7 +132,7 @@
       <!-- TROPHALLAXIS BRIDGES SECTION -->
       <section class="card">
         <div class="section-header">
-          <h2 class="section-title">🔄 Trophallaxis — Multi-Cloud Data Bridges</h2>
+          <h2 class="section-title">🔄 Trophallaxis — Puentes Multi-Cloud (AWS / Azure / GCP / Terra)</h2>
           <button class="btn btn-primary btn-create-black" onclick="app.openModal('create-bridge-modal')">Create Bridge ➕</button>
         </div>
 
@@ -115,16 +141,16 @@
             <thead>
               <tr>
                 <th>Bridge ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Bridge Endpoint</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Nombre Puente</th>
+                <th>Proveedor / Tipo</th>
+                <th>Endpoint de Alimentación</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="bridges-table-body">
               <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted);">No Multi-Cloud Bridges configured.</td>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">Sin Puentes Multi-Cloud configurados.</td>
               </tr>
             </tbody>
           </table>
@@ -138,24 +164,39 @@
   <div id="create-spec-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>🏰 Create Inverted API Spec</h3>
+        <h3>🏰 Crear Especificación en Termitarium</h3>
         <button class="close-btn" onclick="app.closeModal('create-spec-modal')">&times;</button>
       </div>
       <form id="create-spec-form" onsubmit="app.handleCreateSpec(event)">
         <div class="form-group">
-          <label for="spec-name">Spec Name</label>
+          <label for="spec-name">Nombre de la Receta</label>
           <input type="text" id="spec-name" placeholder="tracker-precio-laptop" required>
         </div>
         <div class="form-group">
-          <label for="spec-target-url">Target Website URL</label>
+          <label for="spec-target-url">URL Objetivo del Sitio Web</label>
           <input type="url" id="spec-target-url" placeholder="https://tienda.com/productos/laptop" required>
         </div>
         <div class="form-group">
-          <label for="spec-selectors">Selectors (JSON format or comma-separated key=selector)</label>
+          <label for="spec-selectors">Selectores (JSON o clave=selector CSS/XPath/regex:)</label>
           <textarea id="spec-selectors" rows="3" placeholder='{"titulo": "h1.title", "precio": ".product-price"}' required></textarea>
         </div>
+
+        <!-- NASUTE WORKERS & MUD TUNNEL PROXY OPTIONS -->
+        <div class="p-3 bg-black-05 rounded mb-3 border-left-vermilion" style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px;">
+          <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.6rem;">👃 Nasute Worker & 🕳️ Mud Tunnel Proxy (Stealth & Anti-Bot)</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="spec-stealth" checked style="width: auto;"> Activar Sigilo Stealth (Anti-Bot Bypass)
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="spec-user-agent">User-Agent Personalizado (Opcional)</label>
+            <input type="text" id="spec-user-agent" placeholder="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0">
+          </div>
+        </div>
+
         <div class="form-group">
-          <label for="spec-description">Description (Optional)</label>
+          <label for="spec-description">Descripción (Opcional)</label>
           <input type="text" id="spec-description" placeholder="Extrae precio y título automáticamente">
         </div>
         <div class="modal-footer">
@@ -170,23 +211,37 @@
   <div id="edit-spec-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>✏️ Edit Inverted API Spec</h3>
+        <h3>✏️ Editar Especificación de Termitarium</h3>
         <button class="close-btn" onclick="app.closeModal('edit-spec-modal')">&times;</button>
       </div>
       <form id="edit-spec-form" onsubmit="app.handleUpdateSpec(event)">
         <input type="hidden" id="edit-spec-id">
         <div class="form-group">
-          <label for="edit-spec-name">Spec Name</label>
+          <label for="edit-spec-name">Nombre de la Receta</label>
           <input type="text" id="edit-spec-name" required>
         </div>
         <div class="form-group">
-          <label for="edit-spec-target-url">Target Website URL</label>
+          <label for="edit-spec-target-url">URL Objetivo</label>
           <input type="url" id="edit-spec-target-url" required>
         </div>
         <div class="form-group">
-          <label for="edit-spec-selectors">Selectors JSON</label>
+          <label for="edit-spec-selectors">Selectores JSON</label>
           <textarea id="edit-spec-selectors" rows="4" required></textarea>
         </div>
+
+        <div class="p-3 bg-black-05 rounded mb-3 border-left-vermilion" style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px;">
+          <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.6rem;">👃 Nasute Worker & 🕳️ Mud Tunnel Proxy</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="edit-spec-stealth" style="width: auto;"> Activar Sigilo Stealth (Anti-Bot Bypass)
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="edit-spec-user-agent">User-Agent Personalizado</label>
+            <input type="text" id="edit-spec-user-agent">
+          </div>
+        </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-spec-modal')">Cancel</button>
           <button type="submit" class="btn btn-primary btn-create-black">Update Spec ✏️</button>
@@ -195,28 +250,45 @@
     </div>
   </div>
 
+  <!-- MODAL: CELLULOSE PROCESSOR PREVIEW -->
+  <div id="cellulose-preview-modal" class="modal">
+    <div class="modal-content" style="max-width: 720px;">
+      <div class="modal-header">
+        <h3>🧫 Cellulose Processor — Vista Previa de Celulosa Extraída</h3>
+        <button class="close-btn" onclick="app.closeModal('cellulose-preview-modal')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Estructura JSON Digerida</label>
+        <pre id="cellulose-json-preview" style="background: var(--bg-input); color: #10b981; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-subtle); max-height: 320px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="app.closeModal('cellulose-preview-modal')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CREATE WEBHOOK -->
   <div id="create-webhook-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>🦟 Create Inverted Webhook</h3>
+        <h3>🦟 Crear Webhook Invertido (Alates Swarm)</h3>
         <button class="close-btn" onclick="app.closeModal('create-webhook-modal')">&times;</button>
       </div>
       <form id="create-webhook-form" onsubmit="app.handleCreateWebhook(event)">
         <div class="form-group">
-          <label for="webhook-name">Webhook Rule Name</label>
+          <label for="webhook-name">Nombre de la Regla de Alerta</label>
           <input type="text" id="webhook-name" placeholder="Notificar cambio de precio" required>
         </div>
         <div class="form-group">
-          <label for="webhook-url">Target Application Webhook URL</label>
+          <label for="webhook-url">URL del Webhook de tu Aplicación</label>
           <input type="url" id="webhook-url" placeholder="https://mi-app.com/api/v1/webhook" required>
         </div>
         <div class="form-group">
-          <label for="webhook-condition">Trigger Condition</label>
+          <label for="webhook-condition">Condición de Disparo</label>
           <select id="webhook-condition" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="on_change">On DOM Content Change (Recommended)</option>
-            <option value="always">On Every Digestion</option>
-            <option value="on_match">On String Match</option>
+            <option value="on_change">Al cambiar el contenido DOM (Recomendado)</option>
+            <option value="always">En cada digestión</option>
+            <option value="on_match">Al coincidir texto específico</option>
           </select>
         </div>
         <div class="modal-footer">
@@ -231,18 +303,18 @@
   <div id="create-bridge-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>🔄 Create Trophallaxis Multi-Cloud Bridge</h3>
+        <h3>🔄 Crear Puente Multi-Cloud (Trophallaxis)</h3>
         <button class="close-btn" onclick="app.closeModal('create-bridge-modal')">&times;</button>
       </div>
       <form id="create-bridge-form" onsubmit="app.handleCreateBridge(event)">
         <div class="form-group">
-          <label for="bridge-name">Bridge Name</label>
+          <label for="bridge-name">Nombre del Puente</label>
           <input type="text" id="bridge-name" placeholder="Alimentador S3 AWS Production" required>
         </div>
         <div class="form-group">
-          <label for="bridge-type">Bridge Type</label>
+          <label for="bridge-type">Proveedor / Tipo de Destino</label>
           <select id="bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="aws_s3">AWS S3 / EventBridge</option>
+            <option value="aws_s3">AWS S3 / EventBridge / DynamoDB</option>
             <option value="azure_blob">Azure Blob / EventGrid</option>
             <option value="gcp_storage">GCP Storage / PubSub</option>
             <option value="terra_combase">Terra Combase Database</option>
@@ -251,7 +323,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="bridge-endpoint">Bridge Target Endpoint URL</label>
+          <label for="bridge-endpoint">URL del Endpoint del Puente</label>
           <input type="url" id="bridge-endpoint" placeholder="https://aws-bridge.com/events" required>
         </div>
         <div class="modal-footer">
