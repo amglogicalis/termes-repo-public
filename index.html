@@ -37,7 +37,7 @@
           <span class="stat-value" id="stat-apis" style="color: var(--primary);">0</span>
         </div>
         <div class="stat-card">
-          <span class="stat-title">`🦟 Alates Webhooks`</span>
+          <span class="stat-title">🦟 Alates Webhooks</span>
           <span class="stat-value" id="stat-webhooks" style="color: var(--accent-gold);">0</span>
         </div>
         <div class="stat-card">
@@ -78,7 +78,10 @@
       <section class="card" style="border-left: 4px solid var(--accent-green);">
         <div class="section-header">
           <h2 class="section-title">🧫 Cellulose Processor — Procesador & Limpiador de Celulosa (DOM/HTML)</h2>
-          <button class="btn btn-outline btn-sm" onclick="app.showLatestCellulose()">🧫 Inspect Latest Cellulose</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-outline btn-sm" onclick="app.showLatestCellulose()">🧫 Inspect Latest</button>
+            <button class="btn btn-outline btn-sm" onclick="app.clearAllCellulose()" style="color: var(--primary);">Limpiar Todo 🗑️</button>
+          </div>
         </div>
 
         <div class="table-container">
@@ -114,7 +117,7 @@
               <tr>
                 <th>API ID</th>
                 <th>Spec de Origen</th>
-                <th>Acceso</th>
+                <th>Visibilidad</th>
                 <th>Última Sincronización</th>
                 <th>Endpoint Público / Privado</th>
                 <th>Acciones</th>
@@ -142,7 +145,7 @@
               <tr>
                 <th>Rule ID</th>
                 <th>Nombre Alerta</th>
-                <th>Condición Disparo</th>
+                <th>Método / Condición</th>
                 <th>URL Webhook Destino</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -190,7 +193,7 @@
 
   <!-- MODAL: CREATE SPEC -->
   <div id="create-spec-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 640px;">
       <div class="modal-header">
         <h3>🏰 Crear Especificación en Termitarium</h3>
         <button class="close-btn" onclick="app.closeModal('create-spec-modal')">&times;</button>
@@ -209,20 +212,65 @@
           <textarea id="spec-selectors" rows="3" placeholder='{"titulo": "h1.title", "precio": ".product-price"}' required></textarea>
         </div>
 
+        <!-- TERMITOMYCES API CULTIVATION OPTIONS -->
+        <div style="background: rgba(249, 51, 24, 0.08); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.5rem;">🍄 Cultivo de API Sintética Inversa (Termitomyces)</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="spec-cultivate-api" checked style="width: auto;"> Cultivar API Sintética automáticamente al digestar
+            </label>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="spec-api-privacy">Visibilidad de la API Sintética</label>
+            <select id="spec-api-privacy" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+              <option value="public">🌐 Pública (CDN Global a 0ms)</option>
+              <option value="private">🔒 Privada (Bóveda Encriptada .termes-storage)</option>
+            </select>
+          </div>
+        </div>
+
         <!-- MUD TUNNEL PROXY OPTIONS -->
-        <div class="p-3 bg-black-05 rounded mb-3 border-left-vermilion" style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px;">
-          <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.6rem;">🕳️ Mud Tunnel Stealth Config (Anti-Bot Bypass)</h4>
+        <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--accent-gold); border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--accent-gold); font-size: 0.88rem; margin-bottom: 0.5rem;">🕳️ Mud Tunnel Stealth Config</h4>
           <div class="form-group" style="margin-bottom: 0;">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-              <input type="checkbox" id="spec-stealth" checked style="width: auto;"> Activar Sigilo Stealth
+              <input type="checkbox" id="spec-stealth" checked style="width: auto;"> Activar Sigilo Stealth (Anti-Bot Bypass)
             </label>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="spec-description">Descripción (Opcional)</label>
-          <input type="text" id="spec-description" placeholder="Extrae precio y título automáticamente">
+        <!-- ALATES SWARM INTEGRATED WEBHOOK OPTIONS -->
+        <div style="background: rgba(59, 130, 246, 0.08); padding: 1rem; border-left: 3px solid var(--accent-blue); border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--accent-blue); font-size: 0.88rem; margin-bottom: 0.5rem;">🦟 Alates Swarm — Webhook Invertido (Site-to-Webhook)</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="spec-webhook-enable" style="width: auto;" onchange="document.getElementById('spec-webhook-fields').style.display = this.checked ? 'block' : 'none';"> Activar Webhook Invertido para esta receta
+            </label>
+          </div>
+
+          <div id="spec-webhook-fields" style="display: none;">
+            <div class="form-group">
+              <label for="spec-webhook-url">URL Webhook Destino</label>
+              <input type="url" id="spec-webhook-url" placeholder="https://mi-app.com/api/webhook">
+            </div>
+            <div class="form-group">
+              <label for="spec-webhook-method">Método HTTP</label>
+              <select id="spec-webhook-method" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="spec-webhook-headers">Cabeceras HTTP Personalizadas (JSON)</label>
+              <input type="text" id="spec-webhook-headers" placeholder='{"Authorization": "Bearer token"}'>
+            </div>
+            <div class="form-group">
+              <label for="spec-webhook-template">Plantilla JSON Personalizada (Opcional)</label>
+              <textarea id="spec-webhook-template" rows="2" placeholder='{"evento": "DOM_CAMBIO", "url": "{{targetUrl}}"}'></textarea>
+            </div>
+          </div>
         </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-spec-modal')">Cancel</button>
           <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
@@ -233,7 +281,7 @@
 
   <!-- MODAL: EDIT SPEC -->
   <div id="edit-spec-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 640px;">
       <div class="modal-header">
         <h3>✏️ Editar Especificación de Termitarium</h3>
         <button class="close-btn" onclick="app.closeModal('edit-spec-modal')">&times;</button>
@@ -253,8 +301,24 @@
           <textarea id="edit-spec-selectors" rows="4" required></textarea>
         </div>
 
-        <div class="p-3 bg-black-05 rounded mb-3 border-left-vermilion" style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px;">
-          <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.6rem;">🕳️ Mud Tunnel Stealth Config</h4>
+        <div style="background: rgba(249, 51, 24, 0.08); padding: 1rem; border-left: 3px solid var(--primary); border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--primary); font-size: 0.88rem; margin-bottom: 0.5rem;">🍄 Cultivo de API Sintética Inversa</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="edit-spec-cultivate-api" style="width: auto;"> Cultivar API Sintética automáticamente
+            </label>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-spec-api-privacy">Visibilidad de la API Sintética</label>
+            <select id="edit-spec-api-privacy" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+              <option value="public">🌐 Pública (CDN Global a 0ms)</option>
+              <option value="private">🔒 Privada (Bóveda Encriptada .termes-storage)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-left: 3px solid var(--accent-gold); border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--accent-gold); font-size: 0.88rem; margin-bottom: 0.5rem;">🕳️ Mud Tunnel Stealth Config</h4>
           <div class="form-group" style="margin-bottom: 0;">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
               <input type="checkbox" id="edit-spec-stealth" style="width: auto;"> Activar Sigilo Stealth
@@ -286,8 +350,8 @@
         <div class="form-group">
           <label for="edit-api-privacy">Acceso / Visibilidad de la API</label>
           <select id="edit-api-privacy" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="public">🌐 Público (CDN Global a 0ms)</option>
-            <option value="private">🔒 Privado (Bóveda Encriptada .termes-storage)</option>
+            <option value="public">🌐 Pública (CDN Global a 0ms)</option>
+            <option value="private">🔒 Privada (Bóveda Encriptada .termes-storage)</option>
           </select>
         </div>
         <div class="form-group">
@@ -301,6 +365,53 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-api-modal')">Cancel</button>
           <button type="submit" class="btn btn-primary btn-create-black">Update API ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE WEBHOOK -->
+  <div id="create-webhook-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🦟 Crear Webhook Invertido (Alates Swarm)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-webhook-modal')">&times;</button>
+      </div>
+      <form id="create-webhook-form" onsubmit="app.handleCreateWebhook(event)">
+        <div class="form-group">
+          <label for="webhook-name">Nombre de la Regla de Alerta</label>
+          <input type="text" id="webhook-name" placeholder="Notificar cambio de precio" required>
+        </div>
+        <div class="form-group">
+          <label for="webhook-url">URL del Webhook de tu Aplicación</label>
+          <input type="url" id="webhook-url" placeholder="https://mi-app.com/api/v1/webhook" required>
+        </div>
+        <div class="form-group">
+          <label for="webhook-method">Método HTTP</label>
+          <select id="webhook-method" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="webhook-condition">Condición de Disparo</label>
+          <select id="webhook-condition" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="on_change">Al cambiar el contenido DOM (Recomendado)</option>
+            <option value="always">En cada digestión</option>
+            <option value="on_match">Al coincidir texto específico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="webhook-headers">Cabeceras HTTP Personalizadas (JSON Opcional)</label>
+          <input type="text" id="webhook-headers" placeholder='{"Authorization": "Bearer mi_token"}'>
+        </div>
+        <div class="form-group">
+          <label for="webhook-template">Plantilla JSON Personalizada (Opcional)</label>
+          <textarea id="webhook-template" rows="3" placeholder='{"evento": "DOM_CAMBIO", "datos": "{{data}}"}'></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-webhook-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
         </div>
       </form>
     </div>
@@ -324,6 +435,13 @@
           <input type="url" id="edit-webhook-url" required>
         </div>
         <div class="form-group">
+          <label for="edit-webhook-method">Método HTTP</label>
+          <select id="edit-webhook-method" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="edit-webhook-condition">Condición de Disparo</label>
           <select id="edit-webhook-condition" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
             <option value="on_change">Al cambiar el contenido DOM (Recomendado)</option>
@@ -331,9 +449,52 @@
             <option value="on_match">Al coincidir texto específico</option>
           </select>
         </div>
+        <div class="form-group">
+          <label for="edit-webhook-headers">Cabeceras HTTP Personalizadas (JSON)</label>
+          <input type="text" id="edit-webhook-headers">
+        </div>
+        <div class="form-group">
+          <label for="edit-webhook-template">Plantilla JSON Personalizada (Opcional)</label>
+          <textarea id="edit-webhook-template" rows="3" placeholder='{"evento": "DOM_CAMBIO", "datos": "{{data}}"}'></textarea>
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-webhook-modal')">Cancel</button>
           <button type="submit" class="btn btn-primary btn-create-black">Update Webhook ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE BRIDGE -->
+  <div id="create-bridge-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔄 Crear Puente Multi-Cloud (Trophallaxis)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-bridge-modal')">&times;</button>
+      </div>
+      <form id="create-bridge-form" onsubmit="app.handleCreateBridge(event)">
+        <div class="form-group">
+          <label for="bridge-name">Nombre del Puente</label>
+          <input type="text" id="bridge-name" placeholder="Alimentador S3 AWS Production" required>
+        </div>
+        <div class="form-group">
+          <label for="bridge-type">Proveedor / Tipo de Destino</label>
+          <select id="bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="aws_s3">AWS S3 / EventBridge / DynamoDB</option>
+            <option value="azure_blob">Azure Blob / EventGrid</option>
+            <option value="gcp_storage">GCP Storage / PubSub</option>
+            <option value="terra_combase">Terra Combase Database</option>
+            <option value="terra_rolla">Terra Rolla Object Store</option>
+            <option value="generic_webhook">Generic HTTP Endpoint</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="bridge-endpoint">URL del Endpoint del Puente</label>
+          <input type="url" id="bridge-endpoint" placeholder="https://aws-bridge.com/events" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-bridge-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
         </div>
       </form>
     </div>
@@ -389,73 +550,6 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" onclick="app.closeModal('cellulose-preview-modal')">Cerrar</button>
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CREATE WEBHOOK -->
-  <div id="create-webhook-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>🦟 Crear Webhook Invertido (Alates Swarm)</h3>
-        <button class="close-btn" onclick="app.closeModal('create-webhook-modal')">&times;</button>
-      </div>
-      <form id="create-webhook-form" onsubmit="app.handleCreateWebhook(event)">
-        <div class="form-group">
-          <label for="webhook-name">Nombre de la Regla de Alerta</label>
-          <input type="text" id="webhook-name" placeholder="Notificar cambio de precio" required>
-        </div>
-        <div class="form-group">
-          <label for="webhook-url">URL del Webhook de tu Aplicación</label>
-          <input type="url" id="webhook-url" placeholder="https://mi-app.com/api/v1/webhook" required>
-        </div>
-        <div class="form-group">
-          <label for="webhook-condition">Condición de Disparo</label>
-          <select id="webhook-condition" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="on_change">Al cambiar el contenido DOM (Recomendado)</option>
-            <option value="always">En cada digestión</option>
-            <option value="on_match">Al coincidir texto específico</option>
-          </select>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-webhook-modal')">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: CREATE BRIDGE -->
-  <div id="create-bridge-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>🔄 Crear Puente Multi-Cloud (Trophallaxis)</h3>
-        <button class="close-btn" onclick="app.closeModal('create-bridge-modal')">&times;</button>
-      </div>
-      <form id="create-bridge-form" onsubmit="app.handleCreateBridge(event)">
-        <div class="form-group">
-          <label for="bridge-name">Nombre del Puente</label>
-          <input type="text" id="bridge-name" placeholder="Alimentador S3 AWS Production" required>
-        </div>
-        <div class="form-group">
-          <label for="bridge-type">Proveedor / Tipo de Destino</label>
-          <select id="bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="aws_s3">AWS S3 / EventBridge / DynamoDB</option>
-            <option value="azure_blob">Azure Blob / EventGrid</option>
-            <option value="gcp_storage">GCP Storage / PubSub</option>
-            <option value="terra_combase">Terra Combase Database</option>
-            <option value="terra_rolla">Terra Rolla Object Store</option>
-            <option value="generic_webhook">Generic HTTP Endpoint</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="bridge-endpoint">URL del Endpoint del Puente</label>
-          <input type="url" id="bridge-endpoint" placeholder="https://aws-bridge.com/events" required>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-bridge-modal')">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
-        </div>
-      </form>
     </div>
   </div>
 
