@@ -7,6 +7,7 @@ class TermesConsole {
     this.cdnRepo = 'termes-repo-public';
     this.state = {
       specs: {},
+      termitomycesApis: {},
       webhooks: {},
       trophallaxisBridges: {},
       history: [],
@@ -95,6 +96,7 @@ class TermesConsole {
         const content = atob(data.content.replace(/\n/g, ''));
         this.state = JSON.parse(content);
         if (!this.state.specs) this.state.specs = {};
+        if (!this.state.termitomycesApis) this.state.termitomycesApis = {};
         if (!this.state.webhooks) this.state.webhooks = {};
         if (!this.state.trophallaxisBridges) this.state.trophallaxisBridges = {};
         this.showToast('Termitarium Vault loaded successfully!', 'success');
@@ -131,17 +133,19 @@ class TermesConsole {
   renderAll() {
     this.renderStats();
     this.renderSpecs();
+    this.renderTermitomycesApis();
     this.renderWebhooks();
     this.renderBridges();
   }
 
   renderStats() {
     const specsCount = Object.keys(this.state.specs || {}).length;
+    const apisCount = Object.keys(this.state.termitomycesApis || {}).length;
     const webhooksCount = Object.keys(this.state.webhooks || {}).length;
     const bridgesCount = Object.keys(this.state.trophallaxisBridges || {}).length;
 
     document.getElementById('stat-specs').textContent = specsCount;
-    document.getElementById('stat-apis').textContent = specsCount;
+    document.getElementById('stat-apis').textContent = apisCount;
     document.getElementById('stat-webhooks').textContent = webhooksCount;
     document.getElementById('stat-bridges').textContent = bridgesCount;
   }
@@ -151,14 +155,14 @@ class TermesConsole {
     const specs = Object.values(this.state.specs || {});
 
     if (specs.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No extraction specs created yet in Termitarium.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No hay especificaciones creadas en el Termitarium.</td></tr>`;
       return;
     }
 
-    const owner = this.owner || 'user';
     tbody.innerHTML = specs.map(s => {
-      const cdnUrl = `https://${owner}.github.io/${this.cdnRepo}/api/v1/termes/${s.specId}.json`;
       const selectorsSummary = Object.keys(s.selectors || {}).join(', ') || 'None';
+      const mudTunnel = s.mudTunnel || { stealth: true };
+      const stealthBadge = mudTunnel.stealth ? `<span class="badge badge-green">🕳️ Stealth</span>` : `<span class="badge badge-gold">Standard</span>`;
 
       return `
         <tr>
@@ -166,11 +170,10 @@ class TermesConsole {
           <td><strong>${s.name}</strong></td>
           <td><a href="${s.targetUrl}" target="_blank" style="color: var(--primary); font-size: 0.82rem;">${s.targetUrl}</a></td>
           <td><span class="badge badge-gold">${selectorsSummary}</span></td>
-          <td>
-            <a href="${cdnUrl}" target="_blank" class="badge badge-primary">🌐 Synthetic API</a>
-          </td>
+          <td>${stealthBadge}</td>
           <td>
             <button class="btn-icon" onclick="app.digestSpec('${s.specId}')" title="Digest URL">⚡</button>
+            <button class="btn-icon" onclick="app.previewCellulose('${s.specId}')" title="Preview Cellulose 🧫">🧫</button>
             <button class="btn-icon" onclick="app.openEditSpecModal('${s.specId}')" title="Edit">✏️</button>
             <button class="btn-icon" onclick="app.deleteSpec('${s.specId}')" title="Delete">🗑️</button>
           </td>
@@ -179,12 +182,36 @@ class TermesConsole {
     }).join('');
   }
 
+  renderTermitomycesApis() {
+    const tbody = document.getElementById('apis-table-body');
+    const apis = Object.values(this.state.termitomycesApis || {});
+
+    if (apis.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin APIs Sintéticas cultivadas aún. Digiere una especificación para publicar.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = apis.map(a => `
+      <tr>
+        <td><code>${a.apiId}</code></td>
+        <td><strong>${a.name}</strong></td>
+        <td><span class="badge badge-green">${a.status}</span></td>
+        <td><span style="font-size: 0.8rem; color: var(--text-muted);">${a.lastUpdated ? new Date(a.lastUpdated).toLocaleTimeString() : 'N/A'}</span></td>
+        <td><a href="${a.cdnUrl}" target="_blank" class="badge badge-primary">🌐 Synthetic API</a></td>
+        <td>
+          <button class="btn-icon" onclick="app.copyApiUrl('${a.cdnUrl}')" title="Copy API URL 📋">📋 Copy API</button>
+          <button class="btn-icon" onclick="app.previewCellulose('${a.specId}')" title="Preview JSON 🧫">🧫 JSON</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
   renderWebhooks() {
     const tbody = document.getElementById('webhooks-table-body');
     const webhooks = Object.values(this.state.webhooks || {});
 
     if (webhooks.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No Inverted Webhooks configured.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin Webhooks Invertidos configurados.</td></tr>`;
       return;
     }
 
@@ -207,7 +234,7 @@ class TermesConsole {
     const bridges = Object.values(this.state.trophallaxisBridges || {});
 
     if (bridges.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No Multi-Cloud Bridges configured.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Sin Puentes Multi-Cloud configurados.</td></tr>`;
       return;
     }
 
@@ -232,6 +259,8 @@ class TermesConsole {
     const targetUrl = document.getElementById('spec-target-url').value.trim();
     const selectorsStr = document.getElementById('spec-selectors').value.trim();
     const description = document.getElementById('spec-description').value.trim();
+    const stealth = document.getElementById('spec-stealth').checked;
+    const userAgent = document.getElementById('spec-user-agent').value.trim();
 
     let selectors = {};
     try {
@@ -250,6 +279,10 @@ class TermesConsole {
       description,
       targetUrl,
       selectors,
+      mudTunnel: {
+        stealth,
+        userAgent: userAgent || undefined
+      },
       active: true,
       createdAt: now,
       updatedAt: now
@@ -259,7 +292,7 @@ class TermesConsole {
     await this.saveVaultState(`Create spec ${name}`);
     this.closeModal('create-spec-modal');
     document.getElementById('create-spec-form').reset();
-    this.showToast('Inverted API Spec created in Termitarium!', 'success');
+    this.showToast('Receta creada exitosamente en el Termitarium!', 'success');
     this.renderAll();
   }
 
@@ -270,6 +303,8 @@ class TermesConsole {
     document.getElementById('edit-spec-name').value = s.name;
     document.getElementById('edit-spec-target-url').value = s.targetUrl;
     document.getElementById('edit-spec-selectors').value = JSON.stringify(s.selectors, null, 2);
+    document.getElementById('edit-spec-stealth').checked = s.mudTunnel?.stealth !== false;
+    document.getElementById('edit-spec-user-agent').value = s.mudTunnel?.userAgent || '';
     this.openModal('edit-spec-modal');
   }
 
@@ -287,19 +322,25 @@ class TermesConsole {
       this.showToast('Selectors must be valid JSON.', 'error');
       return;
     }
+
+    s.mudTunnel = {
+      stealth: document.getElementById('edit-spec-stealth').checked,
+      userAgent: document.getElementById('edit-spec-user-agent').value.trim() || undefined
+    };
     s.updatedAt = new Date().toISOString();
 
     await this.saveVaultState(`Update spec ${s.name}`);
     this.closeModal('edit-spec-modal');
-    this.showToast('Spec updated successfully!', 'success');
+    this.showToast('Especificación actualizada correctamente!', 'success');
     this.renderAll();
   }
 
   async deleteSpec(specId) {
-    if (!confirm('Are you sure you want to delete this Spec from Termitarium?')) return;
+    if (!confirm('¿Seguro que deseas eliminar esta especificación del Termitarium?')) return;
     delete this.state.specs[specId];
+    delete this.state.termitomycesApis[`api_${specId}`];
     await this.saveVaultState(`Delete spec ${specId}`);
-    this.showToast('Spec deleted.', 'success');
+    this.showToast('Especificación eliminada.', 'success');
     this.renderAll();
   }
 
@@ -307,37 +348,70 @@ class TermesConsole {
     const s = this.state.specs[specId];
     if (!s) return;
 
-    this.showToast(`Digesting ${s.name}...`, 'info');
+    this.showToast(`Digestando ${s.name}...`, 'info');
     const simulatedData = {
       specId,
       digestedAt: new Date().toISOString(),
       sampleTitle: `Digested Content from ${s.name}`,
+      dataExtracted: s.selectors,
       status: 'OK'
     };
 
     s.lastResult = simulatedData;
     s.lastDigestedAt = new Date().toISOString();
 
-    // Publish Synthetic API JSON to CDN
+    // Publish Termitomyces Synthetic API JSON to CDN
     const owner = await this.getOwner();
     if (owner) {
       const path = `api/v1/termes/${specId}.json`;
+      const cdnUrl = `https://${owner}.github.io/${this.cdnRepo}/${path}`;
       const contentEncoded = btoa(JSON.stringify(simulatedData, null, 2));
+
       const getRes = await this.fetchGitHub(`/repos/${owner}/${this.cdnRepo}/contents/${path}`);
       let sha;
       if (getRes.ok) {
         const d = await getRes.json();
         sha = d.sha;
       }
+
       await this.fetchGitHub(`/repos/${owner}/${this.cdnRepo}/contents/${path}`, {
         method: 'PUT',
         body: JSON.stringify({ message: `Digest ${s.name}`, content: contentEncoded, sha })
       });
+
+      this.state.termitomycesApis[`api_${specId}`] = {
+        apiId: `api_${specId}`,
+        specId,
+        name: s.name,
+        cdnUrl,
+        lastUpdated: new Date().toISOString(),
+        status: 'active',
+        data: simulatedData
+      };
     }
 
     await this.saveVaultState(`Digest spec ${s.name}`);
-    this.showToast(`Digested successfully! Synthetic API updated.`, 'success');
+    this.showToast(`Digestión completada! API Sintética Termitomyces actualizada en CDN.`, 'success');
     this.renderAll();
+  }
+
+  previewCellulose(specId) {
+    const s = this.state.specs[specId];
+    const previewArea = document.getElementById('cellulose-json-preview');
+    if (s && s.lastResult) {
+      previewArea.textContent = JSON.stringify(s.lastResult, null, 2);
+    } else {
+      previewArea.textContent = JSON.stringify({
+        status: 'pending_digestion',
+        note: 'Esta receta aún no ha sido digestada. Haz clic en el botón ⚡ Digest para ejecutar los Nasute Workers.'
+      }, null, 2);
+    }
+    this.openModal('cellulose-preview-modal');
+  }
+
+  copyApiUrl(url) {
+    navigator.clipboard.writeText(url);
+    this.showToast('🌐 URL de la API Sintética copiada al portapapeles!', 'success');
   }
 
   // Webhooks
@@ -360,15 +434,15 @@ class TermesConsole {
     await this.saveVaultState(`Create webhook ${name}`);
     this.closeModal('create-webhook-modal');
     document.getElementById('create-webhook-form').reset();
-    this.showToast('Inverted Webhook created!', 'success');
+    this.showToast('Webhook Invertido creado!', 'success');
     this.renderAll();
   }
 
   async deleteWebhook(ruleId) {
-    if (!confirm('Are you sure you want to delete this Webhook?')) return;
+    if (!confirm('¿Seguro que deseas eliminar este Webhook Invertido?')) return;
     delete this.state.webhooks[ruleId];
     await this.saveVaultState(`Delete webhook ${ruleId}`);
-    this.showToast('Webhook deleted.', 'success');
+    this.showToast('Webhook eliminado.', 'success');
     this.renderAll();
   }
 
@@ -391,15 +465,15 @@ class TermesConsole {
     await this.saveVaultState(`Create Trophallaxis Bridge ${name}`);
     this.closeModal('create-bridge-modal');
     document.getElementById('create-bridge-form').reset();
-    this.showToast('Multi-Cloud Bridge created!', 'success');
+    this.showToast('Puente Multi-Cloud creado!', 'success');
     this.renderAll();
   }
 
   async deleteBridge(targetId) {
-    if (!confirm('Are you sure you want to delete this Bridge?')) return;
+    if (!confirm('¿Seguro que deseas eliminar este Puente Multi-Cloud?')) return;
     delete this.state.trophallaxisBridges[targetId];
     await this.saveVaultState(`Delete bridge ${targetId}`);
-    this.showToast('Bridge deleted.', 'success');
+    this.showToast('Puente eliminado.', 'success');
     this.renderAll();
   }
 
