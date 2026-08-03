@@ -138,11 +138,15 @@ $env:GITHUB_TOKEN="ghp_your_github_personal_access_token"
 
 ## 💻 CLI Commands Reference
 
-### 🌐 Launch Termes Console
+### 🌐 Abrir Consola Web Local (Offline en Localhost)
 ```bash
+# Abrir consola web local en puerto por defecto (http://localhost:3720)
 termes console
+
+# O en puerto personalizado:
+termes studio --port 4000
 ```
-*Opens the official live TERMES Console in your default web browser.*
+*Inicia un servidor HTTP local en `http://localhost:3720` (o puerto personalizado) para administrar TERMES de forma 100% privada sin depender de Internet. Si el puerto está ocupado, detecta automáticamente el siguiente disponible.*
 
 ---
 
