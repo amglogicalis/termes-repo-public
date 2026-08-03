@@ -788,19 +788,145 @@ class TermesConsole {
   }
 
   // Form Handlers — Bridges
+  populateSourceSpecDropdowns() {
+    const specs = Object.values(this.state.specs || {});
+    const options = `<option value="">-- Seleccionar Termitarium --</option>` +
+      specs.map(s => `<option value="${s.specId}">${s.name} (${s.specId})</option>`).join('');
+
+    const createSelect = document.getElementById('bridge-source-spec');
+    const editSelect = document.getElementById('edit-bridge-source-spec');
+    if (createSelect) createSelect.innerHTML = options;
+    if (editSelect) editSelect.innerHTML = options;
+  }
+
+  testBridgeSimulationFromSpecForm() {
+    const name = document.getElementById('spec-name')?.value || 'Termitarium Test';
+    const mapperStr = document.getElementById('spec-bridge-mapper')?.value.trim();
+    const type = document.getElementById('spec-bridge-type')?.value || 'terra_combase';
+    const repoUrl = document.getElementById('spec-bridge-repo-url')?.value.trim() || 'https://github.com/amglogicalis/combase-storage';
+    const targetName = document.getElementById('spec-bridge-target')?.value.trim() || 'precios_db';
+
+    let mapper = {};
+    if (mapperStr) {
+      try { mapper = JSON.parse(mapperStr); } catch {}
+    }
+
+    const sampleExtractedData = {
+      titulo: 'Laptop Gaming Pro 16"',
+      precio: 1299.99,
+      stock: 'In Stock (12 unidades)',
+      timestamp: new Date().toISOString()
+    };
+
+    const mappedData = {};
+    for (const [key, val] of Object.entries(sampleExtractedData)) {
+      const targetKey = mapper[key] || key;
+      mappedData[targetKey] = val;
+    }
+
+    const previewJson = {
+      dryRun: true,
+      simulationResult: 'SUCCESS (200 OK)',
+      bridgeType: type,
+      destinationRepoUrl: repoUrl,
+      destinationTarget: targetName,
+      originalExtractedData: sampleExtractedData,
+      fieldMapperApplied: mapper,
+      transformedPayloadToSend: {
+        source: 'termes_trophallaxis_dryrun',
+        specName: name,
+        data: mappedData
+      }
+    };
+
+    const modal = document.getElementById('cellulose-preview-modal');
+    const container = document.getElementById('cellulose-json-preview');
+    if (container) container.textContent = JSON.stringify(previewJson, null, 2);
+    this.openModal('cellulose-preview-modal');
+    this.showToast('🧪 Simulación Dry-Run ejecutada con éxito!', 'success');
+  }
+
+  testBridgeSimulationFromBridgeForm(mode) {
+    const prefix = mode === 'edit' ? 'edit-bridge-' : 'bridge-';
+    const name = document.getElementById(`${prefix}name`)?.value || 'Bridge Test';
+    const sourceSpecId = document.getElementById(`${prefix}source-spec`)?.value;
+    const type = document.getElementById(`${prefix}type`)?.value || 'terra_combase';
+    const repoUrl = document.getElementById(`${prefix}repo-url`)?.value.trim() || 'https://github.com/amglogicalis/combase-storage';
+    const targetName = document.getElementById(`${prefix}target-name`)?.value.trim() || 'precios_db';
+    const mapperStr = document.getElementById(`${prefix}field-mapper`)?.value.trim();
+
+    let mapper = {};
+    if (mapperStr) {
+      try { mapper = JSON.parse(mapperStr); } catch {}
+    }
+
+    const spec = this.state.specs[sourceSpecId];
+    const sampleData = spec?.lastResult || {
+      titulo: 'Ejemplo de Producto Extraído',
+      precio: '99.95 €',
+      categoria: 'Electrónica'
+    };
+
+    const mappedData = {};
+    for (const [key, val] of Object.entries(sampleData)) {
+      const targetKey = mapper[key] || key;
+      mappedData[targetKey] = val;
+    }
+
+    const previewJson = {
+      dryRun: true,
+      simulationResult: 'SUCCESS (200 OK)',
+      bridgeName: name,
+      sourceTermitarium: spec ? `${spec.name} (${spec.specId})` : 'Ninguno seleccionado',
+      bridgeType: type,
+      destinationRepoUrl: repoUrl,
+      destinationTarget: targetName,
+      originalData: sampleData,
+      transformedPayloadToSend: mappedData
+    };
+
+    const container = document.getElementById('cellulose-json-preview');
+    if (container) container.textContent = JSON.stringify(previewJson, null, 2);
+    this.openModal('cellulose-preview-modal');
+    this.showToast('🧪 Simulación de Puente ejecutada con éxito!', 'success');
+  }
+
   async handleCreateBridge(e) {
     e.preventDefault();
     const name = document.getElementById('bridge-name').value.trim();
+    const sourceSpecId = document.getElementById('bridge-source-spec').value;
     const type = document.getElementById('bridge-type').value;
-    const endpoint = document.getElementById('bridge-endpoint').value.trim();
+    const repoUrl = document.getElementById('bridge-repo-url').value.trim();
+    const targetName = document.getElementById('bridge-target-name').value.trim();
+    const authToken = document.getElementById('bridge-auth-token').value.trim();
+    const mapperStr = document.getElementById('bridge-field-mapper').value.trim();
+
+    let fieldMapper = {};
+    if (mapperStr) {
+      try { fieldMapper = JSON.parse(mapperStr); } catch {}
+    }
 
     const targetId = `bridge_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     this.state.trophallaxisBridges[targetId] = {
       targetId,
       name,
       type,
-      config: { webhookUrl: endpoint },
-      active: true
+      sourceSpecId,
+      repoUrl,
+      targetName,
+      authToken,
+      fieldMapper,
+      config: { webhookUrl: repoUrl },
+      active: true,
+      bridgeLogs: [
+        {
+          timestamp: new Date().toISOString(),
+          status: 'success',
+          statusCode: 200,
+          message: 'Puente creado e inicializado correctamente.',
+          payloadPreview: { status: 'ready', repoUrl, targetName }
+        }
+      ]
     };
 
     await this.saveVaultState(`Create Trophallaxis Bridge ${name}`);
@@ -813,10 +939,17 @@ class TermesConsole {
   openEditBridgeModal(targetId) {
     const b = this.state.trophallaxisBridges[targetId];
     if (!b) return;
+    this.populateSourceSpecDropdowns();
+
     document.getElementById('edit-bridge-id').value = targetId;
     document.getElementById('edit-bridge-name').value = b.name;
-    document.getElementById('edit-bridge-type').value = b.type || 'aws_s3';
-    document.getElementById('edit-bridge-endpoint').value = b.config?.webhookUrl || b.config?.endpoint || '';
+    document.getElementById('edit-bridge-source-spec').value = b.sourceSpecId || '';
+    document.getElementById('edit-bridge-type').value = b.type || 'terra_combase';
+    document.getElementById('edit-bridge-repo-url').value = b.repoUrl || b.config?.webhookUrl || '';
+    document.getElementById('edit-bridge-target-name').value = b.targetName || '';
+    document.getElementById('edit-bridge-auth-token').value = b.authToken || '';
+    document.getElementById('edit-bridge-field-mapper').value = b.fieldMapper ? JSON.stringify(b.fieldMapper) : '';
+
     this.openModal('edit-bridge-modal');
   }
 
@@ -827,8 +960,20 @@ class TermesConsole {
     if (!b) return;
 
     b.name = document.getElementById('edit-bridge-name').value.trim();
+    b.sourceSpecId = document.getElementById('edit-bridge-source-spec').value;
     b.type = document.getElementById('edit-bridge-type').value;
-    b.config = { webhookUrl: document.getElementById('edit-bridge-endpoint').value.trim() };
+    b.repoUrl = document.getElementById('edit-bridge-repo-url').value.trim();
+    b.targetName = document.getElementById('edit-bridge-target-name').value.trim();
+    b.authToken = document.getElementById('edit-bridge-auth-token').value.trim();
+
+    const mapperStr = document.getElementById('edit-bridge-field-mapper').value.trim();
+    if (mapperStr) {
+      try { b.fieldMapper = JSON.parse(mapperStr); } catch {}
+    } else {
+      delete b.fieldMapper;
+    }
+
+    b.config = { webhookUrl: b.repoUrl };
 
     await this.saveVaultState(`Update Bridge ${b.name}`);
     this.closeModal('edit-bridge-modal');
