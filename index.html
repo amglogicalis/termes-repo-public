@@ -299,6 +299,47 @@
           </div>
         </div>
 
+        <!-- TROPHALLAXIS BRIDGE INTEGRATED OPTIONS -->
+        <div style="background: rgba(16, 185, 129, 0.08); padding: 1rem; border-left: 3px solid var(--accent-green); border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--accent-green); font-size: 0.88rem; margin-bottom: 0.5rem;">🔄 Trophallaxis Bridge (Exportación Automática)</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="spec-bridge-enable" style="width: auto;" onchange="document.getElementById('spec-bridge-fields').style.display = this.checked ? 'block' : 'none';"> Activar Puente Trophallaxis
+            </label>
+          </div>
+
+          <div id="spec-bridge-fields" style="display: none;">
+            <div class="form-group">
+              <label for="spec-bridge-type">Proveedor / Tipo de Destino</label>
+              <select id="spec-bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+                <option value="terra_combase">🏛️ Terra Combase (Base de Datos Transaccional)</option>
+                <option value="terra_rolla">🗄️ Terra Rolla (Almacenamiento de Objetos)</option>
+                <option value="aws_s3">☁️ AWS S3 / Azure / GCP Storage</option>
+                <option value="generic_webhook">🌐 Custom Webhook / API Externa</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="spec-bridge-repo-url">URL del Repositorio Destino / Webhook Endpoint</label>
+              <input type="text" id="spec-bridge-repo-url" placeholder="https://github.com/amglogicalis/combase-storage">
+            </div>
+            <div class="form-group">
+              <label for="spec-bridge-target">Nombre de Tabla / Bucket Destino</label>
+              <input type="text" id="spec-bridge-target" placeholder="precios_monitor">
+            </div>
+            <div class="form-group">
+              <label for="spec-bridge-token">Auth Key / PAT de Acceso (Privado)</label>
+              <input type="password" id="spec-bridge-token" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+              <label for="spec-bridge-mapper">Mapeador de Campos JSON (Opcional)</label>
+              <textarea id="spec-bridge-mapper" rows="2" placeholder='{"precio": "price_eur", "titulo": "product_name"}'></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <button type="button" class="btn btn-outline" style="width: 100%; font-size: 0.82rem; border-color: var(--accent-green); color: var(--accent-green);" onclick="app.testBridgeSimulationFromSpecForm()">🧪 Probar Puente (Simulación Dry-Run)</button>
+            </div>
+          </div>
+        </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-spec-modal')">Cancel</button>
           <button type="submit" class="btn btn-primary btn-create-black">Create ➕</button>
@@ -514,19 +555,40 @@
           <input type="text" id="bridge-name" placeholder="Alimentador S3 AWS Production" required>
         </div>
         <div class="form-group">
-          <label for="bridge-type">Proveedor / Tipo de Destino</label>
-          <select id="bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="aws_s3">AWS S3 / EventBridge / DynamoDB</option>
-            <option value="azure_blob">Azure Blob / EventGrid</option>
-            <option value="gcp_storage">GCP Storage / PubSub</option>
-            <option value="terra_combase">Terra Combase Database</option>
-            <option value="terra_rolla">Terra Rolla Object Store</option>
-            <option value="generic_webhook">Generic HTTP Endpoint</option>
+          <label for="bridge-source-spec">Termitarium de Origen (Receta de Datos)</label>
+          <select id="bridge-source-spec" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="">-- Seleccionar Termitarium --</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="bridge-endpoint">URL del Endpoint del Puente</label>
-          <input type="url" id="bridge-endpoint" placeholder="https://aws-bridge.com/events" required>
+          <label for="bridge-type">Proveedor / Tipo de Destino</label>
+          <select id="bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="terra_combase">🏛️ Terra Combase Database</option>
+            <option value="terra_rolla">🗄️ Terra Rolla Object Store</option>
+            <option value="aws_s3">☁️ AWS S3 / EventBridge / DynamoDB</option>
+            <option value="azure_blob">☁️ Azure Blob / EventGrid</option>
+            <option value="gcp_storage">☁️ GCP Storage / PubSub</option>
+            <option value="generic_webhook">🌐 Generic HTTP Endpoint / Webhook</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="bridge-repo-url">URL del Repositorio Destino / Webhook Endpoint</label>
+          <input type="text" id="bridge-repo-url" placeholder="https://github.com/amglogicalis/combase-storage" required>
+        </div>
+        <div class="form-group">
+          <label for="bridge-target-name">Nombre de Tabla / Bucket Destino</label>
+          <input type="text" id="bridge-target-name" placeholder="precios_monitor">
+        </div>
+        <div class="form-group">
+          <label for="bridge-auth-token">Auth Key / PAT de Acceso (Privado)</label>
+          <input type="password" id="bridge-auth-token" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label for="bridge-field-mapper">Mapeador de Campos JSON (Opcional)</label>
+          <textarea id="bridge-field-mapper" rows="2" placeholder='{"precio": "price_eur", "titulo": "product_name"}'></textarea>
+        </div>
+        <div class="form-group">
+          <button type="button" class="btn btn-outline" style="width: 100%; border-color: var(--accent-green); color: var(--accent-green);" onclick="app.testBridgeSimulationFromBridgeForm('create')">🧪 Probar Puente (Simulación Dry-Run)</button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('create-bridge-modal')">Cancel</button>
@@ -550,19 +612,40 @@
           <input type="text" id="edit-bridge-name" required>
         </div>
         <div class="form-group">
-          <label for="edit-bridge-type">Proveedor / Tipo de Destino</label>
-          <select id="edit-bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
-            <option value="aws_s3">AWS S3 / EventBridge / DynamoDB</option>
-            <option value="azure_blob">Azure Blob / EventGrid</option>
-            <option value="gcp_storage">GCP Storage / PubSub</option>
-            <option value="terra_combase">Terra Combase Database</option>
-            <option value="terra_rolla">Terra Rolla Object Store</option>
-            <option value="generic_webhook">Generic HTTP Endpoint</option>
+          <label for="edit-bridge-source-spec">Termitarium de Origen</label>
+          <select id="edit-bridge-source-spec" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="">-- Seleccionar Termitarium --</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="edit-bridge-endpoint">URL del Endpoint del Puente</label>
-          <input type="url" id="edit-bridge-endpoint" required>
+          <label for="edit-bridge-type">Proveedor / Tipo de Destino</label>
+          <select id="edit-bridge-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="terra_combase">🏛️ Terra Combase Database</option>
+            <option value="terra_rolla">🗄️ Terra Rolla Object Store</option>
+            <option value="aws_s3">☁️ AWS S3 / EventBridge / DynamoDB</option>
+            <option value="azure_blob">☁️ Azure Blob / EventGrid</option>
+            <option value="gcp_storage">☁️ GCP Storage / PubSub</option>
+            <option value="generic_webhook">🌐 Generic HTTP Endpoint / Webhook</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-bridge-repo-url">URL del Repositorio Destino / Webhook Endpoint</label>
+          <input type="text" id="edit-bridge-repo-url" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-bridge-target-name">Nombre de Tabla / Bucket Destino</label>
+          <input type="text" id="edit-bridge-target-name">
+        </div>
+        <div class="form-group">
+          <label for="edit-bridge-auth-token">Auth Key / PAT de Acceso (Privado)</label>
+          <input type="password" id="edit-bridge-auth-token" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label for="edit-bridge-field-mapper">Mapeador de Campos JSON</label>
+          <textarea id="edit-bridge-field-mapper" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <button type="button" class="btn btn-outline" style="width: 100%; border-color: var(--accent-green); color: var(--accent-green);" onclick="app.testBridgeSimulationFromBridgeForm('edit')">🧪 Probar Puente (Simulación Dry-Run)</button>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-bridge-modal')">Cancel</button>
