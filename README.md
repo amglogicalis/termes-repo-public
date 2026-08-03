@@ -183,14 +183,32 @@ termes webhook delete --id wh_xyz123
 
 ---
 
-### 🔄 Trophallaxis — Multi-Cloud Bridges
+### 🔄 Trophallaxis — Multi-Cloud Bridges & Mapeador de Campos
 
 ```bash
-# 1. Create a multi-cloud bridge for AWS S3
-termes bridge create --name "Sync S3 Bucket" --type aws_s3 --endpoint "https://aws-bridge.com/events"
+# 1. Crear un puente Multi-Cloud con Mapeador de Campos JSON
+termes bridge create \
+  --name "Sync Combase Events" \
+  --type terra_combase \
+  --repo "https://github.com/amglogicalis/combase-storage" \
+  --target "sandbox_events" \
+  --spec "spec_xyz123" \
+  --mapper '{"precio":"price_eur","titulo":"product_title"}'
 
-# 2. List active bridges
+# 2. Listar puentes activos y sus destinos
 termes bridge list
+
+# 3. Probar un puente mediante Simulación Dry-Run (sin enviar datos reales)
+termes bridge simulate --id bridge_xyz123
+
+# 4. Ver histórico y logs de auditoría de un puente
+termes bridge logs --id bridge_xyz123
+
+# 5. Actualizar configuración de un puente existente
+termes bridge update --id bridge_xyz123 --target "eventos_v2"
+
+# 6. Eliminar un puente
+termes bridge delete --id bridge_xyz123
 ```
 
 ---
@@ -225,14 +243,36 @@ const spec = await termes.createSpec(
   }
 );
 
-// 2. Digest target URL and publish Synthetic API to CDN
+// 2. Create a Trophallaxis Multi-Cloud Bridge with Field Mapper
+const bridge = await termes.createTrophallaxisBridge(
+  'Terra Combase Storage Bridge',
+  'terra_combase',
+  {
+    sourceSpecId: spec.specId,
+    repoUrl: 'https://github.com/amglogicalis/combase-storage',
+    targetName: 'laptop_prices',
+    fieldMapper: {
+      price: 'price_eur',
+      title: 'product_name'
+    }
+  }
+);
+
+// 3. Test Bridge Dry-Run Simulation
+const simulation = termes.simulateBridge(bridge.targetId, {
+  title: 'Gaming Laptop 16"',
+  price: '1299.99'
+});
+console.log('🧪 Simulated Mapped Data:', simulation.mappedData);
+
+// 4. Digest target URL and publish Synthetic API to CDN + feed bridges automatically
 const { result, cdnUrl } = await termes.digestSpec(spec.specId);
 
 console.log('✔ Digested in:', result.durationMs, 'ms');
 console.log('🌐 Live Inverted Synthetic API URL (0ms CDN):', cdnUrl);
 console.log('📦 Extracted Data:', result.data);
 
-// 3. Create an Inverted Webhook (Site-to-Webhook)
+// 5. Create an Inverted Webhook (Site-to-Webhook)
 const webhook = await termes.createInvertedWebhook(
   'Price Change Trigger',
   'https://myapp.com/api/webhooks',
