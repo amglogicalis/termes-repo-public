@@ -211,26 +211,58 @@ termes bridge update --id bridge_xyz123 --target "eventos_v2"
 termes bridge delete --id bridge_xyz123
 ```
 
-### 🔬 Symbiont AI Gateway — Web-AI Bridge & OpenAI Endpoints
+### 🔬 Symbiont AI Gateway — Web-AI Bridge & OpenAI Endpoints (CLI & SDK)
+
+El motor **Symbiont** transforma sesiones web de IA (Google Gemini Web, DeepSeek, ChatGPT, Claude) en un servidor local estándar compatible con **OpenAI REST API** (`/v1/chat/completions`) a **coste $0 y sin límites de API comercial**:
 
 ```bash
 # 1. Iniciar el servidor local OpenAI-compatible en el puerto 7420
 termes symbiont start --port 7420
 
 # 2. Generar una llave sk-termes-symbiont con Auto-Fallback (Gemini -> DeepSeek -> ChatGPT)
-termes symbiont key create --name "Cursor IDE Key" --model "gemini-2.5-flash"
+termes symbiont key create --name "Cursor IDE Dev" --model "gemini-3.7-flash"
 
-# 3. Listar todas las llaves generadas y sus cadenas de fallback
+# 3. Generar una llave pública abierta (consumible sin exigencia de Bearer token)
+termes symbiont key create --name "Public Dev Key" --model "gemini-3.7-flash" --no-auth
+
+# 4. Listar todas las llaves generadas y su estado
 termes symbiont key list
 
-# 4. Registrar un proveedor web adicional (con cookies o endpoint)
-termes symbiont provider add --type gemini_web --name "Mi Gemini Personal"
+# 5. Registrar un proveedor web adicional o actualizar prioridad
+termes symbiont provider add --type gemini_web --name "Google Gemini Web 3.7"
 
-# 5. Listar proveedores y su orden de prioridad en fallback
+# 6. Listar proveedores y orden de Auto-Fallback
 termes symbiont provider list
 
-# 6. Probar una consulta de chat completion desde la terminal
-termes symbiont test --prompt "Explica cómo funciona Termes Symbiont en 2 frases"
+# 7. Probar una consulta de inferencia en tiempo real desde la terminal
+termes symbiont test --prompt "Quien es el mejor jugador de futbol del mundo?" --model "gemini-3.7-flash"
+```
+
+#### 🔌 Integración con Cursor IDE (`settings.json`)
+```json
+{
+  "openai.baseUrl": "http://localhost:7420/v1",
+  "openai.apiKey": "sk-termes-symbiont-default-live",
+  "openai.model": "gemini-3.7-flash"
+}
+```
+
+#### 🐍 Consumo desde Python con el SDK Oficial de OpenAI
+```python
+from openai import OpenAI
+
+# Conecta al Gateway de Termes en local
+client = OpenAI(
+    base_url="http://localhost:7420/v1",
+    api_key="sk-termes-symbiont-default-live"  # o sin clave si allowPublicAccess está activo
+)
+
+response = client.chat.completions.create(
+    model="gemini-3.7-flash",
+    messages=[{"role": "user", "content": "Escribe un script en Python para procesar un CSV"}]
+)
+
+print(response.choices[0].message.content)
 ```
 
 ---
@@ -255,8 +287,8 @@ await termes.init();
 const key = termes.createSymbiontKey({
   name: 'Dev Assistant Key',
   providerChain: ['prov_gemini_web', 'prov_deepseek_web', 'prov_chatgpt_web'],
-  defaultModel: 'gemini-2.5-flash',
-  authRequired: true
+  defaultModel: 'gemini-3.7-flash',
+  authRequired: false // Libre acceso público
 });
 console.log('🔑 New Symbiont Key:', key.keyId);
 
@@ -266,7 +298,7 @@ console.log('⚡ OpenAI endpoint ready at http://localhost:7420/v1/chat/completi
 
 // 3. Direct Chat Completion with Auto-Fallback
 const completion = await termes.symbiontChatCompletion({
-  model: 'gemini-2.5-flash',
+  model: 'gemini-3.7-flash',
   messages: [{ role: 'user', content: 'Hola mundo desde Termes Symbiont' }]
 }, key.keyId);
 
