@@ -349,12 +349,15 @@ class TermesConsole {
 
   renderStats() {
     const specsCount = Object.keys(this.state.specs || {}).length;
+    const celluloseCount = Object.values(this.state.specs || {}).filter(s => !!s.lastResult).length;
     const apisCount = Object.keys(this.state.termitomycesApis || {}).length;
     const webhooksCount = Object.keys(this.state.webhooks || {}).length;
     const bridgesCount = Object.keys(this.state.trophallaxisBridges || {}).length;
 
     const elSpecs = document.getElementById('stat-specs');
     if (elSpecs) elSpecs.textContent = specsCount;
+    const elCellulose = document.getElementById('stat-cellulose');
+    if (elCellulose) elCellulose.textContent = celluloseCount;
     const elApis = document.getElementById('stat-apis');
     if (elApis) elApis.textContent = apisCount;
     const elWh = document.getElementById('stat-webhooks');
