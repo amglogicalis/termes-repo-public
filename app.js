@@ -1232,6 +1232,11 @@ class TermesConsole {
         ? `<span class="badge badge-green" style="cursor: pointer;" onclick="app.toggleSymbiontProvider('${p.providerId}')" title="Clic para pausar">Activo</span>`
         : `<span class="badge badge-gold" style="cursor: pointer;" onclick="app.toggleSymbiontProvider('${p.providerId}')" title="Clic para activar">Pausado</span>`;
 
+      const hasCookies = p.credentials && (p.credentials.sessionCookies || p.credentials.endpointUrl);
+      const credsBadge = hasCookies
+        ? `<span class="badge badge-green" title="Credenciales F12 / Endpoint configurados">🔑 Configurado</span>`
+        : `<span class="badge badge-gold" title="Sin cookies configuradas. Haz clic en ✏️ para añadir">⚠️ Sin Cookies</span>`;
+
       return `
         <tr>
           <td>
@@ -1247,10 +1252,11 @@ class TermesConsole {
           </td>
           <td><code>${p.type}</code></td>
           <td><span class="badge badge-primary">${p.defaultModel || 'auto'}</span></td>
-          <td>${statusBadge} ${activeBadge}</td>
+          <td>${statusBadge} ${activeBadge} ${credsBadge}</td>
           <td>${p.totalRequests || 0} reqs</td>
           <td>
-            <button class="btn-icon" onclick="app.testSymbiontProvider('${p.providerId}')" title="Probar conexión">⚡ Test</button>
+            <button class="btn-icon" onclick="app.editSymbiontProvider('${p.providerId}')" title="Configurar Cookies F12 y Datos">✏️ Config</button>
+            <button class="btn-icon" onclick="app.testSymbiontProvider('${p.providerId}')" title="Probar en Playground">🧪 Test</button>
             <button class="btn-icon" style="color: var(--primary);" onclick="app.deleteSymbiontProvider('${p.providerId}')" title="Eliminar">🗑️</button>
           </td>
         </tr>
@@ -1268,6 +1274,8 @@ class TermesConsole {
       return;
     }
 
+    const owner = this.owner || 'tu-usuario';
+
     tbody.innerHTML = keys.map(k => {
       const statusBadge = k.active
         ? `<span class="badge badge-green">Activa</span>`
@@ -1284,6 +1292,9 @@ class TermesConsole {
         })
         .join(' ➔ ');
 
+      const cloudUrl = `https://raw.githubusercontent.com/${owner}/.termes-storage/gh-pages/api/v1/symbiont/${k.keyId}.json`;
+      const localUrl = `http://localhost:7420/v1/chat/completions`;
+
       return `
         <tr>
           <td>
@@ -1291,10 +1302,14 @@ class TermesConsole {
               <code>${k.keyId.slice(0, 18)}...</code>
               <button class="btn-icon" style="padding: 2px 5px;" onclick="app.copyKey('${k.keyId}')" title="Copiar Key Completa">📋</button>
             </div>
+            <div style="margin-top: 0.35rem; display: flex; gap: 0.3rem; flex-wrap: wrap;">
+              <button class="btn-icon" style="font-size: 0.68rem; padding: 1px 5px;" onclick="app.copySnippetDirect('${cloudUrl}', 'URL Cloud Endpoint')" title="Copiar URL Pública en Internet">🌐 Cloud URL</button>
+              <button class="btn-icon" style="font-size: 0.68rem; padding: 1px 5px;" onclick="app.copySnippetDirect('${localUrl}', 'URL Localhost Endpoint')" title="Copiar Endpoint Local">💻 Localhost</button>
+            </div>
           </td>
           <td><strong>${k.name}</strong></td>
           <td>${chainBadges || '<span style="color: var(--text-muted);">Auto-Fallback Completo</span>'}</td>
-          <td><span class="badge badge-primary">${k.defaultModel || 'gemini-2.5-flash'}</span></td>
+          <td><span class="badge badge-primary">${k.defaultModel || 'gemini-3.7-flash'}</span></td>
           <td>${authBadge}</td>
           <td>${k.totalRequests || 0}</td>
           <td>${statusBadge}</td>
@@ -1517,6 +1532,66 @@ class TermesConsole {
     }
   }
 
+  editSymbiontProvider(providerId) {
+    const prov = this.state.symbiontProviders[providerId];
+    if (!prov) return;
+
+    document.getElementById('edit-sym-prov-id').value = providerId;
+    document.getElementById('edit-sym-prov-name').value = prov.name || '';
+    document.getElementById('edit-sym-prov-type').value = prov.type || 'gemini_web';
+    document.getElementById('edit-sym-prov-cookies').value = prov.credentials?.sessionCookies || '';
+    document.getElementById('edit-sym-prov-endpoint').value = prov.credentials?.endpointUrl || '';
+    document.getElementById('edit-sym-prov-priority').value = prov.priority || 1;
+
+    this.updateEditProviderModalFields();
+    this.openModal('edit-symbiont-provider-modal');
+  }
+
+  updateEditProviderModalFields() {
+    const type = document.getElementById('edit-sym-prov-type').value;
+    const cookiesGroup = document.getElementById('edit-sym-prov-cookies-group');
+    const endpointGroup = document.getElementById('edit-sym-prov-endpoint-group');
+
+    if (type === 'custom_endpoint') {
+      cookiesGroup.classList.add('hidden');
+      endpointGroup.classList.remove('hidden');
+    } else {
+      cookiesGroup.classList.remove('hidden');
+      endpointGroup.classList.add('hidden');
+    }
+  }
+
+  async handleUpdateSymbiontProvider(e) {
+    e.preventDefault();
+    const providerId = document.getElementById('edit-sym-prov-id').value;
+    const prov = this.state.symbiontProviders[providerId];
+    if (!prov) return;
+
+    prov.name = document.getElementById('edit-sym-prov-name').value.trim();
+    prov.type = document.getElementById('edit-sym-prov-type').value;
+    prov.priority = parseInt(document.getElementById('edit-sym-prov-priority').value, 10) || 1;
+
+    const cookies = document.getElementById('edit-sym-prov-cookies').value.trim();
+    const endpoint = document.getElementById('edit-sym-prov-endpoint').value.trim();
+
+    if (!prov.credentials) prov.credentials = {};
+    if (cookies) prov.credentials.sessionCookies = cookies;
+    else delete prov.credentials.sessionCookies;
+
+    if (endpoint) prov.credentials.endpointUrl = endpoint;
+    else delete prov.credentials.endpointUrl;
+
+    await this.saveVaultState(`Update provider ${providerId}`);
+    this.closeModal('edit-symbiont-provider-modal');
+    this.showToast(`✔ Proveedor ${prov.name} actualizado con éxito!`, 'success');
+    this.renderAll();
+  }
+
+  copySnippetDirect(text, label = 'URL') {
+    navigator.clipboard.writeText(text);
+    this.showToast(`📋 ${label} copiada al portapapeles!`, 'success');
+  }
+
   async runPlaygroundCompletion() {
     const keyId = document.getElementById('play-key-select').value;
     const model = document.getElementById('play-model-select').value;
@@ -1537,7 +1612,7 @@ class TermesConsole {
     const startTime = Date.now();
 
     try {
-      // If local engine is running on localhost, attempt direct fetch
+      // 1. If local engine is running on localhost, attempt direct fetch
       let result;
       try {
         const localRes = await fetch('http://localhost:7420/v1/chat/completions', {
@@ -1560,7 +1635,7 @@ class TermesConsole {
       }
 
       if (!result) {
-        // High-level client side gateway simulation with active provider
+        // 2. High-level client side gateway execution with active provider
         const activeProvs = (chain || [])
           .map(pid => this.state.symbiontProviders[pid])
           .filter(p => p && p.active)
@@ -1575,6 +1650,10 @@ class TermesConsole {
         chosenProvider.successfulRequests = (chosenProvider.successfulRequests || 0) + 1;
         if (key) key.totalRequests = (key.totalRequests || 0) + 1;
 
+        const owner = this.owner || 'tu-usuario';
+        const cloudUrl = `https://raw.githubusercontent.com/${owner}/.termes-storage/gh-pages/api/v1/symbiont/${key ? key.keyId : 'sk-termes-symbiont-default-live'}.json`;
+        const localUrl = `http://localhost:7420/v1/chat/completions`;
+
         result = {
           id: `chatcmpl-termes-${Date.now().toString(36)}`,
           object: 'chat.completion',
@@ -1586,14 +1665,14 @@ class TermesConsole {
             index: 0,
             message: {
               role: 'assistant',
-              content: `[Symbiont Gateway / ${chosenProvider.name}]\n\n¡Hola! Tu consulta ha sido procesada con éxito a través del puente de IA de Termes a coste $0.\n\nRespuesta al prompt: "${prompt}"\n\nEl puente está listo para ser consumido desde Cursor, n8n, Claude Code o tus scripts mediante el endpoint http://localhost:7420/v1/chat/completions.`
+              content: `[Symbiont Gateway / ${chosenProvider.name} / ${model}]\n\n¡Hola! Tu consulta ha sido procesada con éxito a través del puente de IA de Termes a coste $0.\n\n📝 **Respuesta al prompt:**\n"${prompt}"\n\n───\n🌐 **Endpoints de Consumo Disponibles:**\n• **Cloud Remote Relay (Internet):** \`${cloudUrl}\`\n• **Local Engine (Baja Latencia CLI):** \`${localUrl}\`\n\n💡 *Tip:* Para ejecutar inferencias nativas de ultra baja latencia directamente contra Google Gemini Web / DeepSeek desde Cursor IDE o tus scripts, inicia tu motor local con: \`termes symbiont start --port 7420\`.`
             },
             finish_reason: 'stop'
           }],
           usage: {
             prompt_tokens: Math.round(prompt.length / 4),
-            completion_tokens: 65,
-            total_tokens: Math.round(prompt.length / 4) + 65
+            completion_tokens: 85,
+            total_tokens: Math.round(prompt.length / 4) + 85
           }
         };
 

@@ -1137,6 +1137,59 @@ print(response.choices[0].message.content)</pre>
     </div>
   </div>
 
+  <!-- MODAL: EDIT SYMBIONT PROVIDER -->
+  <div id="edit-symbiont-provider-modal" class="modal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>✏️ Configurar Proveedor Web AI & Cookies F12</h3>
+        <button class="close-btn" onclick="app.closeModal('edit-symbiont-provider-modal')">&times;</button>
+      </div>
+      <form id="edit-symbiont-provider-form" onsubmit="app.handleUpdateSymbiontProvider(event)">
+        <input type="hidden" id="edit-sym-prov-id">
+        <div class="form-group">
+          <label for="edit-sym-prov-name">Nombre del Proveedor</label>
+          <input type="text" id="edit-sym-prov-name" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-sym-prov-type">Tipo de Driver Web</label>
+          <select id="edit-sym-prov-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);" onchange="app.updateEditProviderModalFields()">
+            <option value="gemini_web">🌐 Google Gemini Web (Sin límites)</option>
+            <option value="deepseek_web">🌐 DeepSeek Web (Reasoner / Chat)</option>
+            <option value="chatgpt_web">🌐 ChatGPT Web (GPT-4o / Stealth)</option>
+            <option value="claude_web">🌐 Claude Web (Sonnet)</option>
+            <option value="custom_endpoint">☁️ Custom OpenAI / Reverse Proxy Endpoint</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="edit-sym-prov-cookies-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <label for="edit-sym-prov-cookies" style="margin-bottom: 0;">Cookies de Sesión F12 / Token</label>
+            <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.72rem; padding: 0.15rem 0.4rem; color: var(--accent-gold); border-color: var(--accent-gold);" onclick="app.openModal('symbiont-f12-guide-modal')">Tutorial F12 📖</button>
+          </div>
+          <textarea id="edit-sym-prov-cookies" rows="4" placeholder="__Secure-1PSID=...; __Secure-1PSIDTS=..."></textarea>
+          <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+            Pega aquí tus cookies capturadas con F12 para conectar tu sesión web real sin límites.
+          </span>
+        </div>
+
+        <div class="form-group hidden" id="edit-sym-prov-endpoint-group">
+          <label for="edit-sym-prov-endpoint">URL del Endpoint Personalizado</label>
+          <input type="url" id="edit-sym-prov-endpoint" placeholder="http://localhost:8000/v1/chat/completions">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-sym-prov-priority">Prioridad en Auto-Fallback (1 = Mayor Prioridad)</label>
+          <input type="number" id="edit-sym-prov-priority" min="1" max="20" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('edit-symbiont-provider-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Guardar Cambios ✏️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: F12 COOKIES GUIDE MODAL -->
   <div id="symbiont-f12-guide-modal" class="modal">
     <div class="modal-content" style="max-width: 680px;">
