@@ -337,74 +337,6 @@ class TermesConsole {
     }
   }
 
-  ensureDefaultSymbiontState() {
-    if (!this.state.symbiontProviders || Object.keys(this.state.symbiontProviders).length === 0) {
-      this.state.symbiontProviders = {
-        'prov_gemini_web': {
-          providerId: 'prov_gemini_web',
-          type: 'gemini_web',
-          name: 'Gemini Web (Free/Unlimited)',
-          description: 'Google Gemini web session via reverse tunnel. Zero rate limits.',
-          credentials: {},
-          defaultModel: 'gemini-3.7-flash',
-          availableModels: ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-pro', 'gemini-2.5-flash', 'gemini-2.5-pro'],
-          priority: 1,
-          active: true,
-          status: 'online',
-          totalRequests: 0,
-          successfulRequests: 0,
-          failedRequests: 0,
-          createdAt: new Date().toISOString()
-        },
-        'prov_deepseek_web': {
-          providerId: 'prov_deepseek_web',
-          type: 'deepseek_web',
-          name: 'DeepSeek Web (Reasoner & Chat)',
-          description: 'DeepSeek-V3 & DeepSeek-R1 web session.',
-          credentials: {},
-          defaultModel: 'deepseek-chat',
-          availableModels: ['deepseek-chat', 'deepseek-reasoner'],
-          priority: 2,
-          active: true,
-          status: 'online',
-          totalRequests: 0,
-          successfulRequests: 0,
-          failedRequests: 0,
-          createdAt: new Date().toISOString()
-        },
-        'prov_chatgpt_web': {
-          providerId: 'prov_chatgpt_web',
-          type: 'chatgpt_web',
-          name: 'ChatGPT Web (GPT-4o / o3-mini)',
-          description: 'OpenAI ChatGPT web interface via stealth session.',
-          credentials: {},
-          defaultModel: 'gpt-4o',
-          availableModels: ['gpt-4o', 'gpt-4o-mini', 'o3-mini', 'o1'],
-          priority: 3,
-          active: true,
-          status: 'online',
-          totalRequests: 0,
-          successfulRequests: 0,
-          failedRequests: 0,
-          createdAt: new Date().toISOString()
-        },
-        'prov_claude_web': {
-          providerId: 'prov_claude_web',
-          type: 'claude_web',
-          name: 'Claude Web (Sonnet / Haiku)',
-          description: 'Anthropic Claude web session.',
-          credentials: {},
-          defaultModel: 'claude-3-7-sonnet',
-          availableModels: ['claude-3-7-sonnet', 'claude-3-5-sonnet', 'claude-3-5-haiku'],
-          priority: 4,
-          active: true,
-          status: 'online',
-          totalRequests: 0,
-          successfulRequests: 0,
-          failedRequests: 0,
-          createdAt: new Date().toISOString()
-        }
-      };
   // Render UI
   renderAll() {
     this.renderStats();
@@ -1213,4 +1145,8 @@ class TermesConsole {
 
 
 const app = new TermesConsole();
+window.app = app;
 window.addEventListener('DOMContentLoaded', () => app.init());
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  app.init();
+}
