@@ -252,6 +252,33 @@ class TermesConsole {
     }
   }
 
+  async saveVaultState(message = 'Update Termes State') {
+    try {
+      if (!this.token || this.owner === 'demo_user') {
+        localStorage.setItem('termes_vault_state', JSON.stringify(this.state));
+        return;
+      }
+
+      const owner = await this.getOwner();
+      if (!owner) return;
+
+      const getRes = await this.fetchGitHub(`/repos/${owner}/${this.storageRepo}/contents/state.json`);
+      let sha;
+      if (getRes.ok) {
+        const d = await getRes.json();
+        sha = d.sha;
+      }
+
+      const contentEncoded = btoa(JSON.stringify(this.state, null, 2));
+      await this.fetchGitHub(`/repos/${owner}/${this.storageRepo}/contents/state.json`, {
+        method: 'PUT',
+        body: JSON.stringify({ message, content: contentEncoded, sha })
+      });
+    } catch (e) {
+      console.warn(`Could not sync to GitHub storage vault: ${e.message}`);
+    }
+  }
+
   ensureDefaultSymbiontState() {
     if (!this.state.symbiontProviders || Object.keys(this.state.symbiontProviders).length === 0) {
       this.state.symbiontProviders = {
@@ -260,9 +287,11 @@ class TermesConsole {
           type: 'gemini_web',
           name: 'Gemini Web (Free/Unlimited)',
           description: 'Google Gemini web session via reverse tunnel. Zero rate limits.',
-          credentials: {},
-          defaultModel: 'gemini-2.5-flash',
-          availableModels: ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash'],
+          credentials: {
+            sessionCookies: '__Secure-1PSID=g.a000BAmZ_hnBUEaYw6gMw6pMCI-PlCrz0mEGNka9TdYYkoQLImiuivOi-RMhjbE0Bb_NiSqwmgACgYKAegSARISFQHGX2Mi81LYdWpyWahnB9_f44qLjxoVAUF8yKp8OwWCUR4RLqUhYI7D2Bkp0076; __Secure-1PSIDTS=sidts-CjIBPWEu2V0seOL7Qfazx4u-PWkqUSmJQGLmuCmjuk0YdokZXWTn965jeSy--fczTcU0qxAA'
+          },
+          defaultModel: 'gemini-3.7-flash',
+          availableModels: ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-pro', 'gemini-2.5-flash', 'gemini-2.5-pro'],
           priority: 1,
           active: true,
           status: 'online',
@@ -274,7 +303,7 @@ class TermesConsole {
         'prov_deepseek_web': {
           providerId: 'prov_deepseek_web',
           type: 'deepseek_web',
-          name: 'DeepSeek Web (Reasoner / Chat)',
+          name: 'DeepSeek Web (Reasoner & Chat)',
           description: 'DeepSeek-V3 & DeepSeek-R1 web session.',
           credentials: {},
           defaultModel: 'deepseek-chat',
@@ -290,12 +319,28 @@ class TermesConsole {
         'prov_chatgpt_web': {
           providerId: 'prov_chatgpt_web',
           type: 'chatgpt_web',
-          name: 'ChatGPT Web (GPT-4o / Stealth)',
+          name: 'ChatGPT Web (GPT-4o / o3-mini)',
           description: 'OpenAI ChatGPT web interface via stealth session.',
           credentials: {},
           defaultModel: 'gpt-4o',
-          availableModels: ['gpt-4o', 'gpt-4o-mini'],
+          availableModels: ['gpt-4o', 'gpt-4o-mini', 'o3-mini', 'o1'],
           priority: 3,
+          active: true,
+          status: 'online',
+          totalRequests: 0,
+          successfulRequests: 0,
+          failedRequests: 0,
+          createdAt: new Date().toISOString()
+        },
+        'prov_claude_web': {
+          providerId: 'prov_claude_web',
+          type: 'claude_web',
+          name: 'Claude Web (Sonnet / Haiku)',
+          description: 'Anthropic Claude web session.',
+          credentials: {},
+          defaultModel: 'claude-3-7-sonnet',
+          availableModels: ['claude-3-7-sonnet', 'claude-3-5-sonnet', 'claude-3-5-haiku'],
+          priority: 4,
           active: true,
           status: 'online',
           totalRequests: 0,
@@ -313,7 +358,7 @@ class TermesConsole {
           name: 'Master Symbiont Key (Auto-Fallback)',
           description: 'Default master key with Gemini Web -> DeepSeek -> ChatGPT automatic fallback.',
           providerChain: ['prov_gemini_web', 'prov_deepseek_web', 'prov_chatgpt_web'],
-          defaultModel: 'gemini-2.5-flash',
+          defaultModel: 'gemini-3.7-flash',
           authRequired: true,
           rateLimitRpm: 0,
           totalRequests: 0,
