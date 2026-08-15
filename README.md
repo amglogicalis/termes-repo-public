@@ -355,20 +355,30 @@ termes symbiont key delete --id <id>
 
 ---
 
-### 4. 🌐 Public Endpoints with Ephemeral Serverless Relay & Smart Auto-Wake
+### 4. 🌐 Public Endpoints: Single Provider vs Multi-Provider Fallback
 Deploy synthetic public endpoints backed by ephemeral GitHub Actions relays with configurable idle timeout ($0 cost):
 
 ```powershell
-# Create public endpoint with custom API Key and 15 min idle timeout
-termes symbiont endpoint public create --name "Public AI Feed" --providers prov_gemini,prov_deepseek --api-key "sk-termes-prod-live-99" --timeout 15
+# A. Single Provider Endpoint (No fallback - strictly queries one model engine):
+termes symbiont endpoint public create --name "Exclusive Gemini Feed" --providers prov_gemini_web_msuq56vr --api-key "sk-termes-prod-live-99"
 
-# Generate GitHub Actions Workflow YAML for the relay runner
+# B. Single Provider Endpoint for DeepSeek (Open access):
+termes symbiont endpoint public create --name "Exclusive DeepSeek Feed" --providers prov_deepseek_web_msuq58zv --no-auth
+
+# C. Multi-Provider Endpoint with Automatic Fallback Chain:
+# (Prioritizes Gemini 3.7; if saturated or session expires, falls back to DeepSeek seamlessly)
+termes symbiont endpoint public create --name "Enterprise VIP Feed" --providers prov_gemini_web_msuq56vr,prov_deepseek_web_msuq58zv --api-key "sk-termes-prod-live-99" --timeout 15
+
+# D. Update an existing endpoint's provider chain or timeout:
+termes symbiont endpoint public update --id ep_pub_w614r7 --providers prov_deepseek_web_msuq58zv --timeout 30
+
+# E. Generate GitHub Actions Workflow YAML for the serverless relay runner:
 termes symbiont endpoint public workflow --id ep_pub_w614r7
 
-# List public endpoints and live CDN descriptors
+# F. List public endpoints and live CDN descriptors:
 termes symbiont endpoint public list
 
-# Consume endpoint with Smart Auto-Wake (Cold-Start handled automatically)
+# G. Consume endpoint with Smart Auto-Wake (Cold-Start handled automatically):
 termes symbiont query --endpoint ep_pub_w614r7 --key sk-termes-prod-live-99 --model gemini-3.7-flash --prompt "¿Qué es el software libre?"
 ```
 
