@@ -68,6 +68,14 @@
           <span class="stat-title">🔄 Trophallaxis Bridges</span>
           <span class="stat-value" id="stat-bridges" style="color: var(--accent-blue);">0</span>
         </div>
+        <div class="stat-card">
+          <span class="stat-title">🔬 Symbiont Keys</span>
+          <span class="stat-value" id="stat-symbiont-keys" style="color: var(--accent-purple);">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">🌐 AI Providers</span>
+          <span class="stat-value" id="stat-symbiont-providers" style="color: var(--accent-green);">0</span>
+        </div>
       </div>
 
       <!-- TERMITARIUM SECTION -->
@@ -209,6 +217,236 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- 🔬 SYMBIONT AI GATEWAY SECTION -->
+      <section class="card" style="border: 1px solid rgba(139, 92, 246, 0.4); background: rgba(18, 22, 34, 0.7);">
+        <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem; color: #fff;">
+              <span>🔬 Symbiont AI Gateway</span>
+              <span class="badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); font-size: 0.75rem;">Web-AI Bridge & OpenAI Compatible ($0/Free)</span>
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+              Convierte sesiones web de IA (Gemini, DeepSeek, ChatGPT, Claude) en endpoints REST estándar (<code>/v1/chat/completions</code>) con llaves <code>sk-termes-symbiont-xxxx</code> y Auto-Fallback.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-outline btn-sm" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="app.openModal('symbiont-f12-guide-modal')">📖 Guía F12 Cookies</button>
+            <button class="btn btn-primary btn-create-black" onclick="app.openModal('create-symbiont-key-modal')">Generar Key 🔑</button>
+          </div>
+        </div>
+
+        <!-- SYMBIONT SUB-NAVIGATION TABS -->
+        <div class="symbiont-nav">
+          <button class="symbiont-tab-btn active" id="sym-tab-providers-btn" onclick="app.switchSymbiontTab('providers')">🎯 Providers & Auto-Fallback</button>
+          <button class="symbiont-tab-btn" id="sym-tab-keys-btn" onclick="app.switchSymbiontTab('keys')">🔑 Key Vault (sk-termes)</button>
+          <button class="symbiont-tab-btn" id="sym-tab-playground-btn" onclick="app.switchSymbiontTab('playground')">🧪 Live Playground</button>
+          <button class="symbiont-tab-btn" id="sym-tab-docs-btn" onclick="app.switchSymbiontTab('docs')">🔌 Integraciones (Cursor, n8n, SDK)</button>
+        </div>
+
+        <!-- 1. PROVIDERS & AUTO-FALLBACK VIEW -->
+        <div id="sym-tab-providers" class="symbiont-tab-content">
+          <div class="fallback-chain-banner">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 0.3rem;">🔄 Cadena de Auto-Fallback Activa</span>
+              <div class="chain-steps" id="sym-fallback-chain-display">
+                <span class="chain-step">1. 🌐 Gemini Web</span>
+                <span class="chain-arrow">➔</span>
+                <span class="chain-step">2. 🌐 DeepSeek Web</span>
+                <span class="chain-arrow">➔</span>
+                <span class="chain-step">3. 🌐 ChatGPT Web</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="app.openModal('create-symbiont-provider-modal')">Añadir Provider ➕</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Prioridad</th>
+                  <th>Proveedor Web</th>
+                  <th>Tipo / Driver</th>
+                  <th>Modelo por Defecto</th>
+                  <th>Estado</th>
+                  <th>Peticiones</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="symbiont-providers-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted);">Cargando proveedores Symbiont...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. KEY VAULT VIEW -->
+        <div id="sym-tab-keys" class="symbiont-tab-content hidden">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <p style="color: var(--text-muted); font-size: 0.88rem;">
+              Llaves de autenticación <code>sk-termes-symbiont-xxxx</code> para consumir desde herramientas externas.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="app.openModal('create-symbiont-key-modal')">Nueva Key 🔑</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Key ID (sk-termes-...)</th>
+                  <th>Nombre / Etiqueta</th>
+                  <th>Cadena de Providers</th>
+                  <th>Modelo</th>
+                  <th>Autenticación</th>
+                  <th>Peticiones</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="symbiont-keys-table-body">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted);">No hay llaves Symbiont generadas.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. LIVE PLAYGROUND VIEW -->
+        <div id="sym-tab-playground" class="symbiont-tab-content hidden">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div>
+              <div class="form-group">
+                <label for="play-key-select">Symbiont Key a Utilizar</label>
+                <select id="play-key-select" style="background: #0d1117; color: #fff; border: 1px solid var(--border);" onchange="app.updatePlaygroundKeySelection()">
+                  <option value="">-- Master Auto-Fallback (sk-termes-symbiont-default-live) --</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="play-model-select">Modelo Solicitado</label>
+                <select id="play-model-select" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+                  <option value="gemini-2.5-flash">gemini-2.5-flash (Recomendado / Ultra Rápido)</option>
+                  <option value="deepseek-chat">deepseek-chat (DeepSeek-V3)</option>
+                  <option value="gpt-4o">gpt-4o (ChatGPT Web)</option>
+                  <option value="claude-3-5-sonnet">claude-3-5-sonnet (Claude Web)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="play-prompt">Prompt / Mensaje de Usuario</label>
+                <textarea id="play-prompt" rows="5" placeholder="Escribe tu consulta aquí... ej: Explica cómo funciona un Web-AI bridge"></textarea>
+              </div>
+
+              <button class="btn btn-primary btn-create-black" style="width: 100%; padding: 0.75rem;" onclick="app.runPlaygroundCompletion()">Enviar Chat Completion ⚡</button>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 500;">
+                Respuesta del Gateway (OpenAI Response)
+              </label>
+              <div id="play-response-box" style="background: #090d13; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; min-height: 240px; max-height: 380px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6; color: #e6edf3;">
+                <span style="color: var(--text-muted); font-style: italic;">La respuesta procesada por el Gateway aparecerá aquí...</span>
+              </div>
+
+              <div id="play-meta-badges" style="display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap;" class="hidden">
+                <span class="badge badge-primary" id="meta-provider-used">Provider: Gemini Web</span>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green);" id="meta-fallback-badge">Fallback: No</span>
+                <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: var(--accent-blue);" id="meta-tokens-badge">Tokens: 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. INTEGRATION & F12 TUTORIAL VIEW -->
+        <div id="sym-tab-docs" class="symbiont-tab-content hidden">
+          <div class="f12-guide-box">
+            <h3 style="color: var(--accent-gold); font-size: 1.05rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span>🌐 Cómo Capturar Cookies de Sesión Web con F12</span>
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+              Para que Termes pueda utilizar tu sesión gratuita e ilimitada de Gemini, ChatGPT o DeepSeek, solo necesitas copiar tu cookie de sesión del navegador:
+            </p>
+
+            <div class="f12-guide-step">
+              <span class="f12-badge">1</span>
+              <div style="font-size: 0.85rem; color: #e6edf3;">
+                Abre tu navegador habitual (donde ya estés logueado) y entra a <strong>gemini.google.com</strong> (o <strong>chatgpt.com</strong> / <strong>chat.deepseek.com</strong>).
+              </div>
+            </div>
+
+            <div class="f12-guide-step">
+              <span class="f12-badge">2</span>
+              <div style="font-size: 0.85rem; color: #e6edf3;">
+                Pulsa <kbd style="background: #21262d; padding: 2px 6px; border-radius: 4px; border: 1px solid #30363d; font-family: monospace;">F12</kbd> (o click derecho ➔ <em>Inspeccionar</em>) para abrir las Herramientas de Desarrollador.
+              </div>
+            </div>
+
+            <div class="f12-guide-step">
+              <span class="f12-badge">3</span>
+              <div style="font-size: 0.85rem; color: #e6edf3;">
+                Ve a la pestaña <strong>Aplicación (Application)</strong> ➔ en el menú lateral izquierdo expande <strong>Cookies</strong> ➔ selecciona el dominio (ej. <code>https://gemini.google.com</code>).
+              </div>
+            </div>
+
+            <div class="f12-guide-step">
+              <span class="f12-badge">4</span>
+              <div style="font-size: 0.85rem; color: #e6edf3;">
+                Copia el valor de las cookies clave:
+                <ul style="margin-left: 1.25rem; margin-top: 0.3rem; color: var(--text-muted);">
+                  <li><strong>Google Gemini:</strong> Copia <code>__Secure-1PSID</code> y <code>__Secure-1PSIDTS</code>.</li>
+                  <li><strong>ChatGPT:</strong> Copia <code>__Secure-next-auth.session-token</code> o <code>cf_clearance</code>.</li>
+                  <li><strong>DeepSeek:</strong> Copia <code>userToken</code>.</li>
+                  <li><strong>Claude:</strong> Copia <code>sessionKey</code>.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="f12-guide-step">
+              <span class="f12-badge">5</span>
+              <div style="font-size: 0.85rem; color: #e6edf3;">
+                Haz clic en <strong>Añadir Provider ➕</strong> en la pestaña Providers y pega el valor en el campo de credenciales. ¡Tu Bridge estará listo y funcionando!
+              </div>
+            </div>
+          </div>
+
+          <h3 style="color: #fff; font-size: 1rem; margin-bottom: 0.75rem;">Configuraciones Rápidas (Copy & Paste)</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label style="font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 600;">Cursor IDE (settings.json)</label>
+              <div class="code-snippet-box">
+                <button class="copy-snippet-btn" onclick="app.copySnippet('cursor-config')">Copiar 📋</button>
+                <pre id="cursor-config">{
+  "openai.baseUrl": "http://localhost:7420/v1",
+  "openai.apiKey": "sk-termes-symbiont-default-live",
+  "openai.model": "gemini-2.5-flash"
+}</pre>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 600;">Python OpenAI SDK</label>
+              <div class="code-snippet-box">
+                <button class="copy-snippet-btn" onclick="app.copySnippet('python-config')">Copiar 📋</button>
+                <pre id="python-config">from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:7420/v1",
+    api_key="sk-termes-symbiont-default-live"
+)
+
+response = client.chat.completions.create(
+    model="gemini-2.5-flash",
+    messages=[{"role": "user", "content": "Hola mundo"}]
+)
+print(response.choices[0].message.content)</pre>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -683,6 +921,140 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" onclick="app.closeModal('custom-confirm-modal')">Cancelar</button>
         <button type="button" id="confirm-ok-btn" class="btn btn-primary btn-create-black">Confirmar 🗑️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE SYMBIONT KEY -->
+  <div id="create-symbiont-key-modal" class="modal">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3>🔑 Generar Symbiont Key (OpenAI Endpoint)</h3>
+        <button class="close-btn" onclick="app.closeModal('create-symbiont-key-modal')">&times;</button>
+      </div>
+      <form id="create-symbiont-key-form" onsubmit="app.handleCreateSymbiontKey(event)">
+        <div class="form-group">
+          <label for="sym-key-name">Nombre / Etiqueta de la Key</label>
+          <input type="text" id="sym-key-name" placeholder="Cursor IDE Dev / N8N Prod" required>
+        </div>
+        <div class="form-group">
+          <label for="sym-key-desc">Descripción (Opcional)</label>
+          <input type="text" id="sym-key-desc" placeholder="Para desarrollo local y prompts ilimitados">
+        </div>
+        <div class="form-group">
+          <label for="sym-key-default-model">Modelo por Defecto</label>
+          <select id="sym-key-default-model" style="background: #0d1117; color: #fff; border: 1px solid var(--border);">
+            <option value="gemini-2.5-flash">gemini-2.5-flash (Google Gemini Web)</option>
+            <option value="deepseek-chat">deepseek-chat (DeepSeek-V3)</option>
+            <option value="gpt-4o">gpt-4o (ChatGPT Web)</option>
+            <option value="claude-3-5-sonnet">claude-3-5-sonnet (Claude Web)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Cadena de Auto-Fallback (Selecciona los Providers en orden)</label>
+          <div id="sym-key-providers-checkboxes" style="background: #090d13; border: 1px solid var(--border-subtle); padding: 0.75rem; border-radius: 6px; display: flex; flex-direction: column; gap: 0.4rem; max-height: 140px; overflow-y: auto;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #e6edf3;">
+            <input type="checkbox" id="sym-key-auth-required" checked style="width: auto;">
+            <span>Exigir Header <code>Authorization: Bearer sk-termes-...</code> (Recomendado)</span>
+          </label>
+          <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.2rem;">
+            Si desmarcas esta opción, el endpoint aceptará peticiones públicas sin API Key.
+          </span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-symbiont-key-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Generar Key 🔑</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE SYMBIONT PROVIDER -->
+  <div id="create-symbiont-provider-modal" class="modal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>🎯 Registrar Proveedor Web AI</h3>
+        <button class="close-btn" onclick="app.closeModal('create-symbiont-provider-modal')">&times;</button>
+      </div>
+      <form id="create-symbiont-provider-form" onsubmit="app.handleCreateSymbiontProvider(event)">
+        <div class="form-group">
+          <label for="sym-prov-name">Nombre del Proveedor</label>
+          <input type="text" id="sym-prov-name" placeholder="Mi Gemini Personal Web" required>
+        </div>
+        <div class="form-group">
+          <label for="sym-prov-type">Tipo de Driver Web</label>
+          <select id="sym-prov-type" style="background: #0d1117; color: #fff; border: 1px solid var(--border);" onchange="app.updateProviderModalFields()">
+            <option value="gemini_web">🌐 Google Gemini Web (Sin límites)</option>
+            <option value="deepseek_web">🌐 DeepSeek Web (Reasoner / Chat)</option>
+            <option value="chatgpt_web">🌐 ChatGPT Web (GPT-4o / Stealth)</option>
+            <option value="claude_web">🌐 Claude Web (Sonnet)</option>
+            <option value="custom_endpoint">☁️ Custom OpenAI / Reverse Proxy Endpoint</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="sym-prov-cookies-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <label for="sym-prov-cookies" style="margin-bottom: 0;">Cookies de Sesión / Token (F12)</label>
+            <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.72rem; padding: 0.15rem 0.4rem; color: var(--accent-gold); border-color: var(--accent-gold);" onclick="app.openModal('symbiont-f12-guide-modal')">¿Cómo obtenerlas con F12?</button>
+          </div>
+          <textarea id="sym-prov-cookies" rows="3" placeholder="__Secure-1PSID=...; __Secure-1PSIDTS=... o session token"></textarea>
+        </div>
+
+        <div class="form-group hidden" id="sym-prov-endpoint-group">
+          <label for="sym-prov-endpoint">URL del Endpoint Personalizado</label>
+          <input type="url" id="sym-prov-endpoint" placeholder="http://localhost:8000/v1/chat/completions">
+        </div>
+
+        <div class="form-group">
+          <label for="sym-prov-priority">Prioridad en Auto-Fallback (1 = Mayor Prioridad)</label>
+          <input type="number" id="sym-prov-priority" min="1" max="20" value="1" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('create-symbiont-provider-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-create-black">Guardar Proveedor 🎯</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: F12 COOKIES GUIDE MODAL -->
+  <div id="symbiont-f12-guide-modal" class="modal">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-gold);">📖 Tutorial: Extracción de Cookies Web con F12</h3>
+        <button class="close-btn" onclick="app.closeModal('symbiont-f12-guide-modal')">&times;</button>
+      </div>
+      <div style="font-size: 0.88rem; line-height: 1.6; color: #e6edf3;">
+        <p style="margin-bottom: 1rem;">
+          Para consumir Gemini, ChatGPT o DeepSeek gratis e ilimitado, Termes utiliza la sesión activa de tu navegador mediante sus cookies de autenticación:
+        </p>
+
+        <div style="background: #0d1117; border: 1px solid var(--border-subtle); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+          <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Pasos rápidos:</h4>
+          <ol style="margin-left: 1.25rem;">
+            <li>Entra en <strong>gemini.google.com</strong>, <strong>chatgpt.com</strong> o <strong>chat.deepseek.com</strong> con tu sesión habitual.</li>
+            <li>Pulsa la tecla <kbd style="background: #21262d; padding: 2px 6px; border-radius: 4px; border: 1px solid #30363d;">F12</kbd> en tu teclado.</li>
+            <li>Haz clic en la pestaña superior <strong>Aplicación (Application)</strong> (o <em>Almacenamiento</em> en Firefox).</li>
+            <li>En el árbol de la izquierda, despliega <strong>Cookies</strong> y haz clic en el dominio web.</li>
+            <li>Busca los valores clave (ej. <code>__Secure-1PSID</code> en Gemini, o <code>session-token</code> en ChatGPT) y cópialos.</li>
+            <li>Pégalos en el formulario de Proveedor de Termes.</li>
+          </ol>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.8rem;">
+          🔒 <em>Seguridad:</em> Las cookies se guardan exclusivamente en tu bóveda privada <code>.termes-storage</code> y localmente en tu máquina. Nadie más tiene acceso a ellas.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="app.closeModal('symbiont-f12-guide-modal')">Entendido 👍</button>
       </div>
     </div>
   </div>

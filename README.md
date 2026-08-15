@@ -211,6 +211,28 @@ termes bridge update --id bridge_xyz123 --target "eventos_v2"
 termes bridge delete --id bridge_xyz123
 ```
 
+### 🔬 Symbiont AI Gateway — Web-AI Bridge & OpenAI Endpoints
+
+```bash
+# 1. Iniciar el servidor local OpenAI-compatible en el puerto 7420
+termes symbiont start --port 7420
+
+# 2. Generar una llave sk-termes-symbiont con Auto-Fallback (Gemini -> DeepSeek -> ChatGPT)
+termes symbiont key create --name "Cursor IDE Key" --model "gemini-2.5-flash"
+
+# 3. Listar todas las llaves generadas y sus cadenas de fallback
+termes symbiont key list
+
+# 4. Registrar un proveedor web adicional (con cookies o endpoint)
+termes symbiont provider add --type gemini_web --name "Mi Gemini Personal"
+
+# 5. Listar proveedores y su orden de prioridad en fallback
+termes symbiont provider list
+
+# 6. Probar una consulta de chat completion desde la terminal
+termes symbiont test --prompt "Explica cómo funciona Termes Symbiont en 2 frases"
+```
+
 ---
 
 ## 🛠️ Node.js & TypeScript SDK Usage
@@ -218,7 +240,7 @@ termes bridge delete --id bridge_xyz123
 You can import `terra-termes` directly into any Node.js, Next.js, Express, or TypeScript project:
 
 ```typescript
-import { Termes } from 'terra-termes';
+import { Termes, SymbiontGateway } from 'terra-termes';
 
 // Initialize TERMES SDK
 const termes = new Termes({
@@ -228,56 +250,58 @@ const termes = new Termes({
 // Load state from Vault
 await termes.init();
 
-// 1. Create an Inverted API Spec
-const spec = await termes.createSpec(
-  'laptop-price-tracker',
-  'https://store.com/laptops',
-  {
-    title: 'h1.product-title',
-    price: '.product-price'
-  },
-  {
-    description: 'E-commerce price tracker',
-    cdnRepo: 'termes-repo-public',
-    apiIsPrivate: false
-  }
-);
-
-// 2. Create a Trophallaxis Multi-Cloud Bridge with Field Mapper
-const bridge = await termes.createTrophallaxisBridge(
-  'Terra Combase Storage Bridge',
-  'terra_combase',
-  {
-    sourceSpecId: spec.specId,
-    repoUrl: 'https://github.com/amglogicalis/combase-storage',
-    targetName: 'laptop_prices',
-    fieldMapper: {
-      price: 'price_eur',
-      title: 'product_name'
-    }
-  }
-);
-
-// 3. Test Bridge Dry-Run Simulation
-const simulation = termes.simulateBridge(bridge.targetId, {
-  title: 'Gaming Laptop 16"',
-  price: '1299.99'
+// ── 🔬 Symbiont AI Gateway (OpenAI Compatible Bridge) ──
+// 1. Generate a Symbiont API Key
+const key = termes.createSymbiontKey({
+  name: 'Dev Assistant Key',
+  providerChain: ['prov_gemini_web', 'prov_deepseek_web', 'prov_chatgpt_web'],
+  defaultModel: 'gemini-2.5-flash',
+  authRequired: true
 });
-console.log('🧪 Simulated Mapped Data:', simulation.mappedData);
+console.log('🔑 New Symbiont Key:', key.keyId);
 
-// 4. Digest target URL and publish Synthetic API to CDN + feed bridges automatically
-const { result, cdnUrl } = await termes.digestSpec(spec.specId);
+// 2. Start Local REST Server (compatible with OpenAI standard)
+await termes.startSymbiontGateway(7420);
+console.log('⚡ OpenAI endpoint ready at http://localhost:7420/v1/chat/completions');
 
-console.log('✔ Digested in:', result.durationMs, 'ms');
-console.log('🌐 Live Inverted Synthetic API URL (0ms CDN):', cdnUrl);
-console.log('📦 Extracted Data:', result.data);
+// 3. Direct Chat Completion with Auto-Fallback
+const completion = await termes.symbiontChatCompletion({
+  model: 'gemini-2.5-flash',
+  messages: [{ role: 'user', content: 'Hola mundo desde Termes Symbiont' }]
+}, key.keyId);
 
-// 5. Create an Inverted Webhook (Site-to-Webhook)
-const webhook = await termes.createInvertedWebhook(
-  'Price Change Trigger',
-  'https://myapp.com/api/webhooks',
-  'on_change'
-);
+console.log('🤖 Assistant:', completion.choices[0].message.content);
+console.log('🔄 Provider Used:', completion.provider_used);
+console.log('⚠️ Fallback Occurred:', completion.fallback_occurred);
+```
+
+---
+
+## 🔌 Conectar con Cursor IDE, n8n y Python OpenAI SDK
+
+### 1. Cursor IDE (`settings.json`)
+```json
+{
+  "openai.baseUrl": "http://localhost:7420/v1",
+  "openai.apiKey": "sk-termes-symbiont-default-live",
+  "openai.model": "gemini-2.5-flash"
+}
+```
+
+### 2. Python OpenAI SDK
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:7420/v1",
+    api_key="sk-termes-symbiont-default-live"
+)
+
+response = client.chat.completions.create(
+    model="gemini-2.5-flash",
+    messages=[{"role": "user", "content": "¿Cómo funciona el puente?"}]
+)
+print(response.choices[0].message.content)
 ```
 
 ---
