@@ -287,9 +287,7 @@ class TermesConsole {
           type: 'gemini_web',
           name: 'Gemini Web (Free/Unlimited)',
           description: 'Google Gemini web session via reverse tunnel. Zero rate limits.',
-          credentials: {
-            sessionCookies: '__Secure-1PSID=g.a000BAmZ_hnBUEaYw6gMw6pMCI-PlCrz0mEGNka9TdYYkoQLImiuivOi-RMhjbE0Bb_NiSqwmgACgYKAegSARISFQHGX2Mi81LYdWpyWahnB9_f44qLjxoVAUF8yKp8OwWCUR4RLqUhYI7D2Bkp0076; __Secure-1PSIDTS=sidts-CjIBPWEu2V0seOL7Qfazx4u-PWkqUSmJQGLmuCmjuk0YdokZXWTn965jeSy--fczTcU0qxAA'
-          },
+          credentials: {},
           defaultModel: 'gemini-3.7-flash',
           availableModels: ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-pro', 'gemini-2.5-flash', 'gemini-2.5-pro'],
           priority: 1,
