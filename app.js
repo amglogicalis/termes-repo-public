@@ -10,15 +10,11 @@ class TermesConsole {
       termitomycesApis: {},
       webhooks: {},
       trophallaxisBridges: {},
-      symbiontProviders: {},
-      symbiontKeys: {},
       history: [],
       auditLog: []
     };
     this.owner = '';
     this.pendingConfirmCallback = null;
-    this.activeSymbiontTab = 'providers';
-    this.ensureDefaultSymbiontState();
   }
 
   async init() {
@@ -90,10 +86,72 @@ class TermesConsole {
 
   enterDemoMode() {
     this.owner = 'demo_user';
+    this.state = {
+      specs: {
+        'spec_demo_ecommerce': {
+          specId: 'spec_demo_ecommerce',
+          name: 'Precios & Tendencias Tech Demo',
+          targetUrl: 'https://news.ycombinator.com',
+          selectors: {
+            title: '.titleline > a',
+            score: '.score',
+            author: '.hnuser',
+            time: '.age'
+          },
+          mudTunnel: { stealth: true, userAgentRotate: true },
+          cultivateApi: true,
+          cdnRepo: 'termes-repo-public',
+          isPrivate: false,
+          lastDigestedAt: new Date().toISOString(),
+          lastResult: {
+            status: 200,
+            extractedItems: 30,
+            data: [
+              { title: 'Show HN: Termes - Inverted APIs & Web Digesting Engine', score: '342 points', author: 'terra_dev', time: '2 hours ago' },
+              { title: 'Reverse API Engineering with $0 Hosting and GitHub CDN', score: '215 points', author: 'amglogicalis', time: '4 hours ago' }
+            ]
+          }
+        }
+      },
+      termitomycesApis: {
+        'api_demo_news': {
+          apiId: 'api_demo_news',
+          specId: 'spec_demo_ecommerce',
+          name: 'Hacker News Live Synthetic REST API',
+          cdnUrl: 'https://raw.githubusercontent.com/amglogicalis/termes-repo-public/gh-pages/api/v1/termes/api_demo_news.json',
+          isPrivate: false,
+          cdnRepo: 'termes-repo-public',
+          createdAt: new Date().toISOString()
+        }
+      },
+      webhooks: {
+        'wh_demo_alert': {
+          ruleId: 'wh_demo_alert',
+          name: 'Price Drop Instant Alert',
+          targetUrl: 'https://discord.com/api/webhooks/demo',
+          httpMethod: 'POST',
+          triggerCondition: 'on_change',
+          createdAt: new Date().toISOString()
+        }
+      },
+      trophallaxisBridges: {
+        'br_demo_combase': {
+          targetId: 'br_demo_combase',
+          name: 'Sync to Terra Combase Storage',
+          type: 'terra_combase',
+          config: {
+            repoUrl: 'https://github.com/amglogicalis/combase-storage',
+            targetTable: 'market_digests'
+          },
+          createdAt: new Date().toISOString()
+        }
+      },
+      history: [],
+      auditLog: []
+    };
     this.updateAuthUI(true, 'demo_explorer');
-    this.ensureDefaultSymbiontState();
     this.renderAll();
-    this.showToast('Entrando en Modo Exploración / Symbiont Demo ⚡', 'success');
+    this.showToast('Entrando en Modo Exploración Demo ⚡', 'success');
   }
 
   disconnect() {
