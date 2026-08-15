@@ -282,59 +282,129 @@ const termes = new Termes({
 // Load state from Vault
 await termes.init();
 
-// ── 🔬 Symbiont AI Gateway (OpenAI Compatible Bridge) ──
-// 1. Generate a Symbiont API Key
-const key = termes.createSymbiontKey({
-  name: 'Dev Assistant Key',
-  providerChain: ['prov_gemini_web', 'prov_deepseek_web', 'prov_chatgpt_web'],
-  defaultModel: 'gemini-3.7-flash',
-  authRequired: false // Libre acceso público
-});
-console.log('🔑 New Symbiont Key:', key.keyId);
+// ── 🔬 Symbiont AI Gateway (OpenAI Compatible Bridge) [CLI / SDK Exclusive] ──
+// 1. Manage Symbiont Gateway
+const gateway = new SymbiontGateway();
 
-// 2. Start Local REST Server (compatible with OpenAI standard)
-await termes.startSymbiontGateway(7420);
-console.log('⚡ OpenAI endpoint ready at http://localhost:7420/v1/chat/completions');
+// 2. Query Public Endpoint with Smart Auto-Wake & API Key
+const response = await gateway.autoWakeAndChatCompletion(
+  'ep_pub_w614r7',
+  {
+    model: 'gemini-3.7-flash',
+    messages: [{ role: 'user', content: 'Explica la teoría de la relatividad en 1 frase' }]
+  },
+  'sk-termes-prod-live-99'
+);
 
-// 3. Direct Chat Completion with Auto-Fallback
-const completion = await termes.symbiontChatCompletion({
-  model: 'gemini-3.7-flash',
-  messages: [{ role: 'user', content: 'Hola mundo desde Termes Symbiont' }]
-}, key.keyId);
-
-console.log('🤖 Assistant:', completion.choices[0].message.content);
-console.log('🔄 Provider Used:', completion.provider_used);
-console.log('⚠️ Fallback Occurred:', completion.fallback_occurred);
+console.log('🤖 Assistant:', response.choices[0].message.content);
+console.log('🔄 Provider Used:', response.provider_used);
+console.log('⚠️ Fallback Occurred:', response.fallback_occurred);
 ```
 
 ---
 
-## 🔌 Conectar con Cursor IDE, n8n y Python OpenAI SDK
+## 🔬 Symbiont AI Gateway — Web-AI Bridge & OpenAI Gateway ($0 Cost)
 
-### 1. Cursor IDE (`settings.json`)
-```json
-{
-  "openai.baseUrl": "http://localhost:7420/v1",
-  "openai.apiKey": "sk-termes-symbiont-default-live",
-  "openai.model": "gemini-2.5-flash"
-}
+> [!NOTE]
+> **CLI & SDK Exclusive Feature**: The Symbiont AI Gateway is managed and consumed exclusively via the **`termes` CLI** and the **`terra-termes` TypeScript / Node.js SDK**.
+
+### 1. ⚙️ Background Silent Daemon (Zero Terminal Overhead)
+Install the silent background service on Windows/Unix to keep `http://localhost:7420/v1` always active for Cursor IDE, Python, and cURL without opening terminals:
+
+```powershell
+# Install & start silent background daemon (auto-starts on Windows login)
+termes symbiont daemon install
+
+# Check background daemon health
+termes symbiont daemon status
+
+# Uninstall & stop daemon
+termes symbiont daemon uninstall
 ```
 
-### 2. Python OpenAI SDK
+---
+
+### 2. 🤖 Provider Management with Real-Time Validation
+Add AI providers using session credentials with instant validation:
+
+```powershell
+# Add Google Gemini Web (Free/Unlimited)
+termes symbiont provider add --type gemini_web --name "Google Gemini" --cookies "<cookies>"
+
+# Add DeepSeek Web (V3 & R1)
+termes symbiont provider add --type deepseek_web --name "DeepSeek Web" --token "<userToken>"
+
+# List and manage active providers
+termes symbiont provider list
+termes symbiont provider update --id <id> --model gemini-3.7-flash
+termes symbiont provider delete --id <id>
+termes symbiont provider clean
+```
+
+---
+
+### 3. 🔑 Termes API Keys Management
+Create custom API keys to protect your synthetic public endpoints:
+
+```powershell
+termes symbiont key create --name "Production VIP Key" --key "sk-termes-prod-live-99"
+termes symbiont key list
+termes symbiont key rename --id <id> --name "New Key Name"
+termes symbiont key delete --id <id>
+```
+
+---
+
+### 4. 🌐 Public Endpoints with Ephemeral Serverless Relay & Smart Auto-Wake
+Deploy synthetic public endpoints backed by ephemeral GitHub Actions relays with configurable idle timeout ($0 cost):
+
+```powershell
+# Create public endpoint with custom API Key and 15 min idle timeout
+termes symbiont endpoint public create --name "Public AI Feed" --providers prov_gemini,prov_deepseek --api-key "sk-termes-prod-live-99" --timeout 15
+
+# Generate GitHub Actions Workflow YAML for the relay runner
+termes symbiont endpoint public workflow --id ep_pub_w614r7
+
+# List public endpoints and live CDN descriptors
+termes symbiont endpoint public list
+
+# Consume endpoint with Smart Auto-Wake (Cold-Start handled automatically)
+termes symbiont query --endpoint ep_pub_w614r7 --key sk-termes-prod-live-99 --model gemini-3.7-flash --prompt "¿Qué es el software libre?"
+```
+
+---
+
+### 5. 🔌 Consuming via PowerShell, cURL, Python & Cursor IDE
+
+#### 🔵 **PowerShell (Native `Invoke-RestMethod`):**
+```powershell
+$headers = @{ "Content-Type" = "application/json"; "Authorization" = "Bearer sk-termes-prod-live-99" }
+$body = '{"model":"gemini-3.7-flash","messages":[{"role":"user","content":"¿Cuál es la distancia de la Tierra a la Luna?"}]}'
+
+(Invoke-RestMethod -Uri "http://localhost:7420/v1/chat/completions" -Method POST -Headers $headers -Body $body).choices[0].message.content
+```
+
+#### ⚫ **CMD / cURL:**
+```cmd
+curl -X POST http://localhost:7420/v1/chat/completions -H "Content-Type: application/json" -H "Authorization: Bearer sk-termes-prod-live-99" -d "{\"model\":\"gemini-3.7-flash\",\"messages\":[{\"role\":\"user\",\"content\":\"Hola\"}]}"
+```
+
+#### 🐍 **Python (OpenAI SDK Standard):**
 ```python
 from openai import OpenAI
 
-client = OpenAI(
-    base_url="http://localhost:7420/v1",
-    api_key="sk-termes-symbiont-default-live"
-)
-
+client = OpenAI(base_url="http://localhost:7420/v1", api_key="sk-termes-prod-live-99")
 response = client.chat.completions.create(
-    model="gemini-2.5-flash",
-    messages=[{"role": "user", "content": "¿Cómo funciona el puente?"}]
+    model="gemini-3.7-flash", # or "deepseek-chat", "gemini-3.5-flash-lite", "gemini-3.1-pro"
+    messages=[{"role": "user", "content": "Resume la historia de la computación"}]
 )
 print(response.choices[0].message.content)
 ```
+
+#### 💻 **Cursor IDE (`Settings` ➔ `Models`):**
+- **OpenAI Base URL:** `http://localhost:7420/v1`
+- **OpenAI API Key:** `sk-termes-prod-live-99`
+- **Model Name:** `gemini-3.7-flash` / `gemini-3.5-flash-lite` / `gemini-3.1-pro` / `deepseek-chat` / `deepseek-reasoner`
 
 ---
 
