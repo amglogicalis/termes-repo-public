@@ -4,8 +4,108 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Termes Console — Inverted APIs & Web Digesting Engine</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.2.5">
   <link rel="icon" href="assets/logo_termes.png">
+  <style>
+    /* Embedded Symbiont Premium Design Overrides */
+    .symbiont-card {
+      background: rgba(14, 18, 26, 0.8) !important;
+      border: 1px solid rgba(139, 92, 246, 0.35) !important;
+      border-radius: 14px !important;
+      padding: 1.75rem !important;
+      margin-bottom: 2rem !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+      backdrop-filter: blur(16px) !important;
+    }
+    .symbiont-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 1.25rem;
+    }
+    .symbiont-title-box h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .symbiont-nav {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      background: rgba(10, 13, 19, 0.7);
+      padding: 0.4rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      overflow-x: auto;
+    }
+    .symbiont-tab-btn {
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      color: #9ca3af !important;
+      padding: 0.6rem 1.15rem !important;
+      border-radius: 8px !important;
+      cursor: pointer !important;
+      font-size: 0.88rem !important;
+      font-weight: 600 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+      transition: all 0.2s ease !important;
+      white-space: nowrap !important;
+    }
+    .symbiont-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #ffffff !important;
+    }
+    .symbiont-tab-btn.active {
+      background: rgba(139, 92, 246, 0.2) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(139, 92, 246, 0.5) !important;
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.25) !important;
+    }
+    .fallback-chain-banner {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(249, 51, 24, 0.08) 100%) !important;
+      border: 1px solid rgba(139, 92, 246, 0.3) !important;
+      border-radius: 10px !important;
+      padding: 1rem 1.25rem !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: wrap !important;
+      gap: 1rem !important;
+      margin-bottom: 1.5rem !important;
+    }
+    .chain-steps {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.6rem !important;
+      flex-wrap: wrap !important;
+    }
+    .chain-step {
+      background: #090c12 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      padding: 0.35rem 0.8rem !important;
+      border-radius: 6px !important;
+      font-size: 0.84rem !important;
+      font-weight: 600 !important;
+      color: #f3f4f6 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.4rem !important;
+    }
+    .chain-arrow {
+      color: var(--primary) !important;
+      font-weight: 800 !important;
+      font-size: 0.95rem !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -222,20 +322,20 @@
       </section>
 
       <!-- 🔬 SYMBIONT AI GATEWAY SECTION -->
-      <section class="card" style="border: 1px solid rgba(139, 92, 246, 0.4); background: rgba(18, 22, 34, 0.7);">
-        <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem; color: #fff;">
+      <section class="symbiont-card">
+        <div class="symbiont-header">
+          <div class="symbiont-title-box">
+            <h2>
               <span>🔬 Symbiont AI Gateway</span>
               <span class="badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); font-size: 0.75rem;">Web-AI Bridge & OpenAI Compatible ($0/Free)</span>
             </h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.35rem;">
               Convierte sesiones web de IA (Gemini, DeepSeek, ChatGPT, Claude) en endpoints REST estándar (<code>/v1/chat/completions</code>) con llaves <code>sk-termes-symbiont-xxxx</code> y Auto-Fallback.
             </p>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-outline btn-sm" style="border-color: var(--accent-gold); color: var(--accent-gold);" onclick="app.openModal('symbiont-f12-guide-modal')">📖 Guía F12 Cookies</button>
-            <button class="btn btn-primary btn-create-black" onclick="app.openModal('create-symbiont-key-modal')">Generar Key 🔑</button>
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <button class="btn btn-outline btn-sm" style="border-color: var(--accent-gold); color: var(--accent-gold); padding: 0.5rem 0.9rem;" onclick="app.openModal('symbiont-f12-guide-modal')">📖 Guía F12 Cookies</button>
+            <button class="btn btn-primary btn-create-black" style="padding: 0.5rem 1rem;" onclick="app.openModal('create-symbiont-key-modal')">Generar Key 🔑</button>
           </div>
         </div>
 
@@ -251,7 +351,7 @@
         <div id="sym-tab-providers" class="symbiont-tab-content">
           <div class="fallback-chain-banner">
             <div>
-              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 0.3rem;">🔄 Cadena de Auto-Fallback Activa</span>
+              <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 0.4rem;">🔄 Cadena de Auto-Fallback Activa</span>
               <div class="chain-steps" id="sym-fallback-chain-display">
                 <span class="chain-step">1. 🌐 Gemini Web</span>
                 <span class="chain-arrow">➔</span>
@@ -277,9 +377,6 @@
                 </tr>
               </thead>
               <tbody id="symbiont-providers-table-body">
-                <tr>
-                  <td colspan="7" style="text-align: center; color: var(--text-muted);">Cargando proveedores Symbiont...</td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -1063,6 +1160,6 @@ print(response.choices[0].message.content)</pre>
   <!-- TOAST CONTAINER -->
   <div id="toast-container" class="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=1.2.5"></script>
 </body>
 </html>

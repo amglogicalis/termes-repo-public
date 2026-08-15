@@ -18,6 +18,7 @@ class TermesConsole {
     this.owner = '';
     this.pendingConfirmCallback = null;
     this.activeSymbiontTab = 'providers';
+    this.ensureDefaultSymbiontState();
   }
 
   async init() {
