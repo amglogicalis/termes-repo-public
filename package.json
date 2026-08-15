@@ -1,0 +1,54 @@
+{
+  "name": "terra-termes",
+  "version": "1.2.1",
+  "type": "module",
+  "description": "TERMES — Autonomous Web Digesting, Inverted APIs & Symbiont Web-AI Bridge ($0 Cost OpenAI Gateway)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "termes": "bin/termes.js",
+    "terra-termes": "bin/termes.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "console",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amglogicalis/Termes.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test"
+  },
+  "keywords": [
+    "terra",
+    "termes",
+    "scraping",
+    "inverted-api",
+    "synthetic-api",
+    "webhooks",
+    "headless",
+    "playwright",
+    "puppeteer",
+    "stealth"
+  ],
+  "author": "amglogicalis",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.9.3"
+  }
+}
