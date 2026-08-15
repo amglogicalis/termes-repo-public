@@ -1,0 +1,39 @@
+# TERMES Symbiont — Ephemeral Serverless AI Relay for ep_pub_w614r7
+# Cost: $0 | Runner: GitHub Actions | Ephemeral Auto-Shutdown
+
+name: "TERMES Relay: ep_pub_w614r7"
+
+on:
+  workflow_dispatch:
+    inputs:
+      idle_timeout:
+        description: 'Minutos de inactividad antes del apagado automático'
+        required: false
+        default: '15'
+
+jobs:
+  ephemeral-relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360 # Límite máximo de GitHub Actions (6 horas)
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install TERMES Engine & Cloudflare Tunnel
+        run: |
+          npm install -g terra-termes
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Launch Ephemeral Serverless Bridge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENDPOINT_ID: "ep_pub_w614r7"
+          IDLE_TIMEOUT: ${{ inputs.idle_timeout }}
+        run: |
+          termes symbiont relay-worker --endpoint "ep_pub_w614r7" --timeout "${{ inputs.idle_timeout }}"
