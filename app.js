@@ -1292,7 +1292,9 @@ class TermesConsole {
         })
         .join(' ➔ ');
 
-      const cloudUrl = `https://raw.githubusercontent.com/${owner}/.termes-storage/gh-pages/api/v1/symbiont/${k.keyId}.json`;
+      const cdnRepo = this.cdnRepo || 'termes-repo-public';
+      const cloudUrl = `https://raw.githubusercontent.com/${owner}/${cdnRepo}/gh-pages/api/v1/symbiont/${k.keyId}.json`;
+      const pagesUrl = `https://${owner}.github.io/${cdnRepo}/api/v1/symbiont/${k.keyId}.json`;
       const localUrl = `http://localhost:7420/v1/chat/completions`;
 
       return `
@@ -1303,7 +1305,8 @@ class TermesConsole {
               <button class="btn-icon" style="padding: 2px 5px;" onclick="app.copyKey('${k.keyId}')" title="Copiar Key Completa">📋</button>
             </div>
             <div style="margin-top: 0.35rem; display: flex; gap: 0.3rem; flex-wrap: wrap;">
-              <button class="btn-icon" style="font-size: 0.68rem; padding: 1px 5px;" onclick="app.copySnippetDirect('${cloudUrl}', 'URL Cloud Endpoint')" title="Copiar URL Pública en Internet">🌐 Cloud URL</button>
+              <button class="btn-icon" style="font-size: 0.68rem; padding: 1px 5px;" onclick="app.copySnippetDirect('${cloudUrl}', 'URL Cloud Endpoint')" title="Copiar URL Raw CDN en Internet">🌐 Raw CDN</button>
+              <button class="btn-icon" style="font-size: 0.68rem; padding: 1px 5px;" onclick="app.copySnippetDirect('${pagesUrl}', 'URL GitHub Pages API')" title="Copiar URL Pages en Internet">🌍 Pages API</button>
               <button class="btn-icon" style="font-size: 0.68rem; padding: 1px 5px;" onclick="app.copySnippetDirect('${localUrl}', 'URL Localhost Endpoint')" title="Copiar Endpoint Local">💻 Localhost</button>
             </div>
           </td>
@@ -1404,6 +1407,8 @@ class TermesConsole {
     const endpoint = document.getElementById('sym-prov-endpoint').value.trim();
     const priority = parseInt(document.getElementById('sym-prov-priority').value, 10) || (Object.keys(this.state.symbiontProviders).length + 1);
 
+    const publicAccess = document.getElementById('sym-prov-public-access')?.checked ?? true;
+
     const providerId = `prov_${type}_${Date.now().toString(36)}`;
     const newProv = {
       providerId,
@@ -1414,10 +1419,11 @@ class TermesConsole {
         sessionCookies: cookies || undefined,
         endpointUrl: endpoint || undefined
       },
-      defaultModel: type === 'gemini_web' ? 'gemini-2.5-flash' : (type === 'deepseek_web' ? 'deepseek-chat' : 'gpt-4o'),
-      availableModels: [type === 'gemini_web' ? 'gemini-2.5-flash' : (type === 'deepseek_web' ? 'deepseek-chat' : 'gpt-4o')],
+      defaultModel: type === 'gemini_web' ? 'gemini-3.7-flash' : (type === 'deepseek_web' ? 'deepseek-chat' : 'gpt-4o'),
+      availableModels: [type === 'gemini_web' ? 'gemini-3.7-flash' : (type === 'deepseek_web' ? 'deepseek-chat' : 'gpt-4o')],
       priority,
       active: true,
+      allowPublicAccess: publicAccess,
       status: 'online',
       totalRequests: 0,
       successfulRequests: 0,
@@ -1542,6 +1548,8 @@ class TermesConsole {
     document.getElementById('edit-sym-prov-cookies').value = prov.credentials?.sessionCookies || '';
     document.getElementById('edit-sym-prov-endpoint').value = prov.credentials?.endpointUrl || '';
     document.getElementById('edit-sym-prov-priority').value = prov.priority || 1;
+    const publicCheckbox = document.getElementById('edit-sym-prov-public-access');
+    if (publicCheckbox) publicCheckbox.checked = prov.allowPublicAccess ?? true;
 
     this.updateEditProviderModalFields();
     this.openModal('edit-symbiont-provider-modal');
@@ -1570,6 +1578,7 @@ class TermesConsole {
     prov.name = document.getElementById('edit-sym-prov-name').value.trim();
     prov.type = document.getElementById('edit-sym-prov-type').value;
     prov.priority = parseInt(document.getElementById('edit-sym-prov-priority').value, 10) || 1;
+    prov.allowPublicAccess = document.getElementById('edit-sym-prov-public-access')?.checked ?? true;
 
     const cookies = document.getElementById('edit-sym-prov-cookies').value.trim();
     const endpoint = document.getElementById('edit-sym-prov-endpoint').value.trim();

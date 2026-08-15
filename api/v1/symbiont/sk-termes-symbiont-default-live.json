@@ -1,0 +1,53 @@
+{
+  "status": "online",
+  "gateway": "Termes Symbiont AI Gateway",
+  "version": "1.2.0",
+  "keyId": "sk-termes-symbiont-default-live",
+  "name": "Master Symbiont Key (Auto-Fallback)",
+  "authRequired": false,
+  "allowPublicAccess": true,
+  "defaultModel": "gemini-3.7-flash",
+  "fallbackChain": [
+    {
+      "priority": 1,
+      "provider": "Gemini Web (Free/Unlimited)",
+      "type": "gemini_web",
+      "status": "online",
+      "allowPublicAccess": true
+    },
+    {
+      "priority": 2,
+      "provider": "DeepSeek Web (Reasoner & Chat)",
+      "type": "deepseek_web",
+      "status": "online",
+      "allowPublicAccess": true
+    },
+    {
+      "priority": 3,
+      "provider": "ChatGPT Web (GPT-4o / o3-mini)",
+      "type": "chatgpt_web",
+      "status": "online",
+      "allowPublicAccess": true
+    }
+  ],
+  "endpoints": {
+    "cloudCdnUrl": "https://raw.githubusercontent.com/amglogicalis/termes-repo-public/gh-pages/api/v1/symbiont/sk-termes-symbiont-default-live.json",
+    "cloudPagesUrl": "https://amglogicalis.github.io/termes-repo-public/api/v1/symbiont/sk-termes-symbiont-default-live.json",
+    "cloudModelsUrl": "https://amglogicalis.github.io/termes-repo-public/api/v1/symbiont/models.json",
+    "localEngineUrl": "http://localhost:7420/v1/chat/completions"
+  },
+  "consumption": {
+    "openaiSdk": {
+      "baseUrl": "http://localhost:7420/v1",
+      "apiKey": "sk-termes-symbiont-default-live",
+      "model": "gemini-3.7-flash"
+    },
+    "cursorIde": {
+      "openai.baseUrl": "http://localhost:7420/v1",
+      "openai.apiKey": "sk-termes-symbiont-default-live",
+      "openai.model": "gemini-3.7-flash"
+    },
+    "curl": "curl -X POST http://localhost:7420/v1/chat/completions -H 'Content-Type: application/json' -H 'Authorization: Bearer sk-termes-symbiont-default-live' -d '{\"model\":\"gemini-3.7-flash\",\"messages\":[{\"role\":\"user\",\"content\":\"Hola\"}]}'"
+  },
+  "updatedAt": "2026-08-15T20:00:00.000Z"
+}
