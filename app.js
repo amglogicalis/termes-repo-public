@@ -87,6 +87,14 @@ class TermesConsole {
     await this.saveToken();
   }
 
+  enterDemoMode() {
+    this.owner = 'demo_user';
+    this.updateAuthUI(true, 'demo_explorer');
+    this.ensureDefaultSymbiontState();
+    this.renderAll();
+    this.showToast('Entrando en Modo Exploración / Symbiont Demo ⚡', 'success');
+  }
+
   disconnect() {
     this.token = '';
     this.owner = '';
