@@ -1,6 +1,6 @@
 {
   "name": "terra-termes",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "type": "module",
   "description": "TERMES — Autonomous Web Digesting, Inverted APIs & Symbiont Web-AI Bridge ($0 Cost OpenAI Gateway)",
   "main": "dist/index.js",
