@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>TERMES Symbiont AI Gateway — Public Models Discovery</title>
+  <style>
+    body { background: #020704; color: #34d399; font-family: 'JetBrains Mono', monospace; padding: 2rem; margin: 0; line-height: 1.5; }
+    pre { background: #000; padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(16,185,129,0.3); overflow-x: auto; color: #a7f3d0; font-size: 0.85rem; }
+    h1 { font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem; }
+    p { font-size: 0.85rem; color: #9ca3af; margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h1>🌐 TERMES Symbiont AI Gateway — Public Discovery Endpoint</h1>
+  <p>Status: <strong>ONLINE (200 OK)</strong> • Gateway: <strong>Termes Symbiont</strong> • Format: <strong>OpenAI /v1/models Compatible</strong></p>
+  <pre id="json-view">{
+  "object": "list",
+  "gateway": "Termes Symbiont Public CDN Discovery",
+  "status": "online",
+  "active_providers": [
+    "Google Gemini",
+    "DeepSeek",
+    "OpenAI",
+    "Anthropic Claude"
+  ],
+  "data": [
+    { "id": "gemini-3.7-flash", "object": "model", "owned_by": "google-gemini-web", "description": "3.7 Flash - Ayuda completa - Nuevo ($0/Unlimited)" },
+    { "id": "gemini-3.5-flash-lite", "object": "model", "owned_by": "google-gemini-web", "description": "3.5 Flash-Lite - Respuestas ultra rápidas ($0/Unlimited)" },
+    { "id": "gemini-3.1-pro", "object": "model", "owned_by": "google-gemini-web", "description": "3.1 Pro - Razonamiento, matemáticas y código ($0/Unlimited)" },
+    { "id": "gemini-2.5-flash", "object": "model", "owned_by": "google-gemini-web", "description": "2.5 Flash Estable ($0/Unlimited)" },
+    { "id": "deepseek-chat", "object": "model", "owned_by": "deepseek-web", "description": "DeepSeek-V3 General Chat ($0/Unlimited)" },
+    { "id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek-web", "description": "DeepSeek-R1 Deep Thinking ($0/Unlimited)" },
+    { "id": "gpt-4o", "object": "model", "owned_by": "openai-chatgpt-web", "description": "OpenAI GPT-4o Stealth ($0/Unlimited)" },
+    { "id": "gpt-4o-mini", "object": "model", "owned_by": "openai-chatgpt-web", "description": "OpenAI GPT-4o Mini Fast ($0/Unlimited)" },
+    { "id": "o3-mini", "object": "model", "owned_by": "openai-chatgpt-web", "description": "OpenAI o3-mini Reasoning ($0/Unlimited)" },
+    { "id": "claude-3-7-sonnet", "object": "model", "owned_by": "anthropic-claude-web", "description": "Anthropic Claude 3.7 Sonnet ($0/Unlimited)" },
+    { "id": "claude-3-5-sonnet", "object": "model", "owned_by": "anthropic-claude-web", "description": "Anthropic Claude 3.5 Sonnet ($0/Unlimited)" }
+  ]
+}</pre>
+</body>
+</html>
