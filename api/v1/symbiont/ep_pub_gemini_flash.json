@@ -1,0 +1,34 @@
+{
+  "endpointId": "ep_pub_gemini_flash",
+  "name": "Termes Gemini 2.5 Flash Dedicated (Mono-Model)",
+  "status": "online",
+  "gateway": "Termes Symbiont AI Gateway",
+  "version": "1.2.0",
+  "authRequired": false,
+  "allowPublicAccess": true,
+  "defaultModel": "gemini-2.5-flash",
+  "providerChain": [
+    "google_gemini_web"
+  ],
+  "fallbackChain": [
+    {
+      "priority": 1,
+      "provider": "Google Gemini Web (1M Context)",
+      "type": "gemini_web",
+      "status": "online",
+      "allowPublicAccess": true
+    }
+  ],
+  "endpoints": {
+    "cloudCdnUrl": "https://raw.githubusercontent.com/amglogicalis/termes-repo-public/gh-pages/api/v1/symbiont/ep_pub_gemini_flash.json",
+    "cloudPagesUrl": "https://amglogicalis.github.io/termes-repo-public/api/v1/symbiont/ep_pub_gemini_flash.json",
+    "localEngineUrl": "http://localhost:7420/v1/chat/completions"
+  },
+  "consumption": {
+    "openaiSdk": {
+      "baseUrl": "https://amglogicalis.github.io/termes-repo-public/api/v1/symbiont/ep_pub_gemini_flash.json",
+      "model": "gemini-2.5-flash"
+    }
+  },
+  "createdAt": "2026-08-18T13:20:00.000Z"
+}
